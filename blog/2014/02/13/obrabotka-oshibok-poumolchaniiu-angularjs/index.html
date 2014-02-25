@@ -1,0 +1,294 @@
+<!DOCTYPE html> <!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]--> <!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]--> <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]--> <head> <meta charset="utf-8"> <title>Обработка ошибок по умолчанию AngularJS - Egobrain</title> <meta name="author" content="Kozlov Yakov"> <meta name="description" content="При работе c REST Api со страницы SPA часто возникает необходимость обработки ошибок. Все бы ничего, но часть ответов об ошибках касаются &hellip;"> <meta name="keywords" content="angularjs, javascript, архитектура, promise, $q, api, rest"> <meta name="HandheldFriendly" content="True"> <meta name="MobileOptimized" content="320"> <meta name="viewport" content="width=device-width, initial-scale=1"> <link rel="canonical" href="http://www.egobrain.ru/blog/2014/02/13/obrabotka-oshibok-poumolchaniiu-angularjs"> <link href="/favicon.png" rel="icon"> <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css"> <link href="/atom.xml" rel="alternate" title="Egobrain" type="application/atom+xml"> <script src="/javascripts/modernizr-3.0.js"></script> <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script> <script src="/javascripts/octopress.js" type="text/javascript"></script> <link href='http://fonts.googleapis.com/css?family=Yeseva+One' rel='stylesheet' type='text/css'> <link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"> <link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css"> <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-30472012-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script> </head> <body> <header role="banner"><hgroup> <h1><a href="/">Egobrain</a></h1> <h2></h2> </hgroup> </header> <nav role="navigation"><ul class="subscription" data-subscription="rss"> <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li> </ul> <form action="http://google.com/search" method="get"> <fieldset role="search"> <input type="hidden" name="q" value="site:www.egobrain.ru"/> <input class="search" type="text" name="q" results="0" placeholder="Поиск"/> </fieldset> </form> <ul class="main-navigation"> <li><a href="/blog">Блог</a></li> <li><a href="https://github.com/egobrain">Проекты</a></li> </ul> </nav> <div id="main"> <div id="content"> <div> <article class="hentry" role="article"> <header> <h1 class="entry-title">Обработка ошибок по умолчанию AngularJS</h1> <p class="meta"> <time datetime="2014-02-13T15:36:38+04:00" pubdate data-updated="true">Чт, 13 Фев 2014</time> </p> </header> <div class="entry-content"><p>При работе c REST Api со страницы SPA часто возникает необходимость обработки ошибок. Все бы ничего, но часть ответов об ошибках касаются запрашиваемых данных, часть &ndash; могут быть ошибками общего вида c которыми тоже надо что-то делать. Предлагаю свое решение данной проблемы.</p> <p>Для решения проблемы предлагается расширить <strong>$q</strong> через делегат, добавив к нему методы <code>success</code>, <code>error</code>, <code>defaultError</code>. Eсли error callback в полной мере отработал ошибку, то он должен дернуть <code>preventDefault</code>, иначе будет вызван обработчик ошибки по умолчанию.</p> <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">config</span><span class="p">([</span><span class="s1">&#39;$provide&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">$provide</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nx">$provide</span><span class="p">.</span><span class="nx">decorator</span><span class="p">(</span><span class="s1">&#39;$q&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;$delegate&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">$delegate</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="kd">var</span> <span class="nx">_defer</span> <span class="o">=</span> <span class="nx">$delegate</span><span class="p">.</span><span class="nx">defer</span><span class="p">;</span>
+</span><span class='line'>        <span class="nx">$delegate</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>            <span class="kd">var</span> <span class="nx">deferred</span> <span class="o">=</span> <span class="nx">_defer</span><span class="p">();</span>
+</span><span class='line'>            <span class="kd">var</span> <span class="nx">_reject</span> <span class="o">=</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">reject</span><span class="p">;</span>
+</span><span class='line'>            <span class="kd">var</span> <span class="nx">_resolve</span> <span class="o">=</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">resolve</span><span class="p">;</span>
+</span><span class='line'>            <span class="kd">var</span> <span class="nx">_then</span> <span class="o">=</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">;</span>
+</span><span class='line'>            <span class="kd">var</span> <span class="nx">_defaultPrevented</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'>            <span class="kd">var</span> <span class="nx">_default_error_handlers</span> <span class="o">=</span> <span class="p">[];</span>
+</span><span class='line'>            <span class="kd">var</span> <span class="nx">_context</span> <span class="o">=</span> <span class="p">{</span>
+</span><span class='line'>                <span class="nx">preventDefault</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>                    <span class="nx">_defaultPrevented</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+</span><span class='line'>                <span class="p">}</span>
+</span><span class='line'>            <span class="p">};</span>
+</span><span class='line'>            <span class="nx">deferred</span><span class="p">.</span><span class="nx">reject</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>                <span class="kd">var</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span>
+</span><span class='line'>                <span class="nx">_then</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>                    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">_defaultPrevented</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                        <span class="nx">angular</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">_default_error_handlers</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                            <span class="nx">f</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">_context</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
+</span><span class='line'>                        <span class="p">});</span>
+</span><span class='line'>                    <span class="p">}</span>
+</span><span class='line'>                <span class="p">});</span>
+</span><span class='line'>                <span class="nx">_reject</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">_context</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+</span><span class='line'>                <span class="k">return</span> <span class="nx">deferred</span><span class="p">;</span>
+</span><span class='line'>            <span class="p">};</span>
+</span><span class='line'>            <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">.</span><span class="nx">then</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">success</span><span class="p">,</span> <span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                <span class="kd">var</span> <span class="nx">wrap</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                    <span class="k">if</span> <span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                        <span class="k">return</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>                            <span class="k">return</span> <span class="nx">f</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">_context</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+</span><span class='line'>                        <span class="p">};</span>
+</span><span class='line'>                    <span class="p">}</span>
+</span><span class='line'>                <span class="p">};</span>
+</span><span class='line'>                <span class="k">return</span> <span class="nx">_then</span><span class="p">(</span><span class="nx">success</span><span class="p">,</span> <span class="nx">wrap</span><span class="p">(</span><span class="nx">error</span><span class="p">));</span>
+</span><span class='line'>            <span class="p">};</span>
+</span><span class='line'>            <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">.</span><span class="nx">success</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
+</span><span class='line'>                <span class="k">return</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+</span><span class='line'>            <span class="p">};</span>
+</span><span class='line'>            <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">.</span><span class="nx">error</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">fn</span><span class="p">);</span>
+</span><span class='line'>                <span class="k">return</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+</span><span class='line'>            <span class="p">};</span>
+</span><span class='line'>            <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">.</span><span class="nx">defaultError</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>                <span class="nx">_default_error_handlers</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">fn</span><span class="p">);</span>
+</span><span class='line'>                <span class="k">return</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+</span><span class='line'>            <span class="p">};</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nx">deferred</span><span class="p">;</span>
+</span><span class='line'>        <span class="p">};</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nx">$delegate</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}]);</span>
+</span><span class='line'><span class="p">}]);</span>
+</span></code></pre></td></tr></table></div></figure> <p>Пример использования:</p> <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">var</span> <span class="nx">def</span> <span class="o">=</span> <span class="nx">$q</span><span class="p">.</span><span class="nx">defer</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="nx">def</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+</span><span class='line'><span class="nx">promise</span><span class="p">.</span><span class="nx">defaultError</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">alert</span><span class="p">(</span><span class="s1">&#39;Error :&#39;</span> <span class="o">+</span> <span class="nx">error</span><span class="p">.</span><span class="nx">description</span><span class="p">);</span>
+</span><span class='line'><span class="p">})</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">promise</span><span class="p">.</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">// Display new data ...</span>
+</span><span class='line'><span class="p">})</span>
+</span><span class='line'><span class="nx">promise</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="s2">&quot;wrong_data&quot;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="c1">// highlite form fields</span>
+</span><span class='line'>        <span class="p">...</span>
+</span><span class='line'>        <span class="k">this</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">})</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">def</span><span class="p">.</span><span class="nx">reject</span><span class="p">({</span><span class="nx">type</span><span class="o">:</span> <span class="s2">&quot;unauthed&quot;</span><span class="p">});</span> <span class="c1">// Alarm will be shown</span>
+</span><span class='line'><span class="c1">// Orelse</span>
+</span><span class='line'><span class="nx">def</span><span class="p">.</span><span class="nx">reject</span><span class="p">({</span><span class="nx">type</span><span class="o">:</span> <span class="s2">&quot;wrong_data&quot;</span><span class="p">});</span> <span class="c1">// Alarm won&#39;t be shown</span>
+</span></code></pre></td></tr></table></div></figure> <p>Теперь сервис <strong>$http.</strong> Для него лучше всего сделать свою сервис-обертку, к примеру <strong>Server</strong>. Который и будет задавать обработчик ошибок по-умолчанию</p> <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">function</span> <span class="nx">myDefaultErrorHandler</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">// ...</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">function</span> <span class="nx">wrap</span><span class="p">(</span><span class="nx">promise</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="kd">var</span> <span class="nx">def</span> <span class="o">=</span> <span class="nx">$q</span><span class="p">.</span><span class="nx">defer</span><span class="p">();</span>
+</span><span class='line'>    <span class="nx">promise</span><span class="p">.</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nx">def</span><span class="p">.</span><span class="nx">resolve</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">})</span>
+</span><span class='line'>    <span class="nx">promise</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nx">def</span><span class="p">.</span><span class="nx">reject</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+</span><span class='line'>    <span class="p">});</span>
+</span><span class='line'>    <span class="nx">def</span><span class="p">.</span><span class="nx">promise</span><span class="p">.</span><span class="nx">defaultError</span><span class="p">(</span><span class="nx">myDefaultErrorHandler</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">app</span><span class="p">.</span><span class="nx">service</span><span class="p">(</span><span class="s1">&#39;Server&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">$http</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">this</span><span class="p">.</span><span class="nx">get</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nx">wrap</span><span class="p">(</span><span class="nx">$http</span><span class="p">({</span><span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="o">:</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">params</span><span class="o">:</span> <span class="nx">data</span><span class="p">}));</span>
+</span><span class='line'>    <span class="p">};</span>
+</span><span class='line'>    <span class="k">this</span><span class="p">.</span><span class="nx">post</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nx">wrap</span><span class="p">(</span><span class="nx">$http</span><span class="p">({</span><span class="nx">method</span><span class="o">:</span> <span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="o">:</span> <span class="nx">url</span><span class="p">,</span> <span class="nx">data</span><span class="o">:</span> <span class="nx">data</span><span class="p">}));</span>
+</span><span class='line'>    <span class="p">};</span>
+</span><span class='line'>    <span class="p">...</span>
+</span><span class='line'><span class="p">})</span>
+</span></code></pre></td></tr></table></div></figure> <p>Вот и все&hellip; Теперь используем <strong>Server</strong> взамен <strong>$http</strong> и обрабатываем только те ошибки, с которыми знаем что делать в данном контексте, об остальных позаботится <code>myDefaultErrorHandler</code>;</p> <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="nx">Server</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/process&#39;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+</span><span class='line'><span class="p">.</span><span class="nx">success</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">// update views</span>
+</span><span class='line'><span class="p">})</span>
+</span><span class='line'><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span><span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="s2">&quot;wrong_data&quot;</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="c1">// highlite for fields</span>
+</span><span class='line'>        <span class="k">this</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'><span class="p">})</span>
+</span></code></pre></td></tr></table></div></figure> <p><strong>P.S.</strong> Можно еще много улучшать этот код: реализовать <em>Server</em> через провайдер, добавить к нему метод <code>setDefaultErrorHandler</code> и т.п&hellip;</p> <p><strong>P.P.S.</strong> В angular есть баг связанный с делегатами для <strong>$q</strong>. Дело в том, что даже если объявить новую функцию для <strong>promise</strong> в делегатe, при вызове <code>promise.then()</code> вернется объект без нее. Проблема в том, что в коде angular через замыкание всегда используется старая версия функции defer. Я написал <a href="https://github.com/angular/angular.js/pull/5999">PR</a>, но судьба его пока не известна&hellip;</p> </div> <footer> <p class="meta"> <span class="byline author vcard">Опубликовал <span class="fn">Kozlov Yakov</span></span> <time datetime="2014-02-13T15:36:38+04:00" pubdate data-updated="true">Чт, 13 Фев 2014</time> <span class="categories"> <a class='category' href='/blog/categories/angularjs/'>AngularJS</a>, <a class='category' href='/blog/categories/javascript/'>JavaScript</a>, <a class='category' href='/blog/categories/snippets/'>Snippets</a> </span> </p> <div class="sharing"> <a href="//twitter.com/share" class="twitter-share-button" data-url="http://www.egobrain.ru/blog/2014/02/13/obrabotka-oshibok-poumolchaniiu-angularjs/" data-via="" data-counturl="http://www.egobrain.ru/blog/2014/02/13/obrabotka-oshibok-poumolchaniiu-angularjs/">Tweet</a> <div class="g-plusone" data-size="medium"></div> </div> <p class="meta"> <a class="basic-alignment right" href="/blog/2014/02/19/erlang-orm-part-1/" title="Next Post: Erlang ORM. Часть 1.">Erlang ORM. Часть 1. &raquo;</a> </p> </footer> </article> <section> <h1>Комментарии</h1> <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript> </div> </section> </div> <aside class="sidebar"> <section> <h1>Коротко о себе</h1> <p> Привет! Меня зовут Яков. Этой мой блог об erlang, js, web-программировании, fp и прочем... </p> <p> Связаться со мной можно по @почте: xazar.studio@gmail.com </p> </section> <section> <h1>Недавние заметки</h1> <ul id="recent_posts"> <li class="post"> <a href="/blog/2014/02/26/erlang-orm-part-2/">Erlang ORM. Часть 2</a> </li> <li class="post"> <a href="/blog/2014/02/19/erlang-orm-part-1/">Erlang ORM. Часть 1.</a> </li> <li class="post"> <a href="/blog/2014/02/13/obrabotka-oshibok-poumolchaniiu-angularjs/">Обработка ошибок по умолчанию AngularJS</a> </li> </ul> </section> <section> <h1>GitHub Repos</h1> <ul id="gh_repos"> <li class="loading">Status updating...</li> </ul> <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'egobrain',
+            count: 0,
+            skip_forks: true,
+            skip_projects: [ "dip_orm",  "egobrain.github.io",  "erlperf_tests", ],
+            target: '#gh_repos'
+        });
+    });
+  </script> <script src="/javascripts/github.js" type="text/javascript"> </script> </section> <section class="googleplus"> <h1> <a href="https://plus.google.com/113605909138563391004?rel=author"> <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32"> Google+ </a> </h1> </section> </aside> </div> </div> <footer role="contentinfo"><p> Copyright &copy; 2014 - Kozlov Yakov - <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span> </p> </footer> <script type="text/javascript">
+      var disqus_shortname = 'wwwegobrainru';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://www.egobrain.ru/blog/2014/02/13/obrabotka-oshibok-poumolchaniiu-angularjs/';
+        var disqus_url = 'http://www.egobrain.ru/blog/2014/02/13/obrabotka-oshibok-poumolchaniiu-angularjs/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script> <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script> <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script> <script type="text/javascript">
+(function (d, w, c) {
+    (w[c] = w[c] || []).push(function() {
+        try {
+            w.yaCounter24052423 = new Ya.Metrika({id:24052423, enableAll: true});
+        } catch(e) {}
+    });
+
+    var n = d.getElementsByTagName("script")[0],
+        s = d.createElement("script"),
+        f = function () { n.parentNode.insertBefore(s, n); };
+    s.type = "text/javascript";
+    s.async = true;
+    s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+
+    if (w.opera == "[object Opera]") {
+        d.addEventListener("DOMContentLoaded", f);
+    } else { f(); }
+})(document, window, "yandex_metrika_callbacks");
+</script> <noscript><div><img src="//mc.yandex.ru/watch/24052423" style="position:absolute; left:-9999px;" alt=""/></div></noscript> </body> </html>

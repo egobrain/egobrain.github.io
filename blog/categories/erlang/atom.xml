@@ -4,7 +4,7 @@
   <title><![CDATA[Категория: Erlang | Egobrain]]></title>
   <link href="http://www.egobrain.ru/blog/categories/erlang/atom.xml" rel="self"/>
   <link href="http://www.egobrain.ru/"/>
-  <updated>2016-02-21T23:14:08+03:00</updated>
+  <updated>2016-06-03T22:27:32+03:00</updated>
   <id>http://www.egobrain.ru/</id>
   <author>
     <name><![CDATA[Kozlov Yakov]]></name>
@@ -12,6 +12,579 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Erlang ORM. часть 3]]></title>
+    <link href="http://www.egobrain.ru/blog/2016/06/02/erlang-orm-part-3/"/>
+    <updated>2016-06-02T19:26:22+03:00</updated>
+    <id>http://www.egobrain.ru/blog/2016/06/02/erlang-orm-part-3</id>
+    <content type="html"><![CDATA[<p>Прошло уже очень много времени с момента как я писал про свои эксперименты с Erlang ORM.<br/>
+И что я могу сказать? <br/>
+Первое и самое, вероятно, печальное, подход оказался не жизнеспособным,
+Второе &ndash; несмотря на недостатки ORM ее использование помогло набраться опыта работы с postgresql из Erlang и получить представление о том как все действительно должно работать.</p>
+
+<p>Где я допустил ошибки:<br/>
+&ndash; Нельзя мешать в одной модели описание того как данные хранятся в базе и как будут отдаваться клиенту<br/>
+&ndash; Не стоило мешать генерацию sql и непосредственную работу с БД в одном проекте<br/>
+&ndash; Подход ActiveRecord &ndash; не самая лучшая идея для Erlang<br/>
+&ndash; Слишком много parse_transform-a</p>
+
+<p>За эти 2 года я очень часто сталкивался с генерацией sql в чужих проектах на Erlang и, к сожалению, единого, общепризнанного, да что там, хотя бы просто удобного решения нигде не встречал.
+Везде лишь ад из case блоков, сверток и iolist-ов.
+Что еще печальнее, коллеги все чаще стали поглядывать в сторону Elixir с его ecto. А уж совсем не хочется изучать, а тем более использовать в продакшене еще один язык.</p>
+
+<p>Так на свет появился стек для работы с postgresql и моделями данных:<br/>
+&ndash; <a href="https://github.com/egobrain/epgpool">epgpool</a> &ndash; простой пулл подключений к postgres. Очередной велосипед, если есть предложения чего-то получше &ndash; могу рассмотреть<br/>
+&ndash; <a href="https://github.com/egobrain/dbschema">dbschema</a>  &ndash; автоматические миграции наше все. Библиотек позволяет исполнять sql и erl up/down инструкции. Что убирает кучу работы по ручной раскладке и позволяет автоматизировать тестирование<br/>
+&ndash; <a href="https://github.com/egobrain/emodel">emodel</a>  &ndash; библиотека для валидации входных данных. Та самая прослойка, которая должна отделять чистые, проверенные данные от мусора, который к нам прилетает. Отличается тем, что возвращает сразу все ошибки до которых может   дотянуться.<br/>
+&ndash; <a href="https://github.com/egobrain/equery">equery</a>  &ndash; генерация sql, вдохновленная подходом Ecto<br/>
+&ndash; <a href="https://github.com/egobrain/repo">repo</a>  &ndash; одна из возможных реализаций CRUD библиотеки поверх <a href="https://github.com/egobrain/equery">equery</a> и <a href="https://github.com/egobrain/epgpool">epgpool</a>.</p>
+
+<p>Сегодня я расскажу про <a href="https://github.com/egobrain/repo">repo</a> и <a href="https://github.com/egobrain/equery">equery</a>.</p>
+
+<h1>Equery</h1>
+
+<p>Какие проблемы с ручным написанием sql?<br/>
+1. Как выразился один мой бывший коллега, основная проблема &ndash; смапить результат исполнения sql на внутреннюю структуру данных<br/>
+2. Сложность композиции. (К примеру, как добавить еще один фильтр к уже имеющимся)<br/>
+3. Необходимость модифицировать разрозненные запросы в случае добавления, удаления полей в таблице.</p>
+
+<p>Как будем решать?</p>
+
+<p>Итак, понадобится сущность, которая будет описывать структуру таблицы SQL (Благо в Erlang r17 появились мапы и с ними жизнь стала намного легче).
+Решение в лоб</p>
+
+<p>```erlang
+Schema = #{</p>
+
+<pre><code>fields =&gt; #{
+   field_1 =&gt; Fields1Opts,
+   field_2 =&gt; Fields2Opts,
+},
+table =&gt; &lt;&lt;"SomeTableName"&gt;&gt;
+</code></pre>
+
+<p>}
+```
+FieldOpts &ndash; Набор дополнительной информации о колонках. Например:<br/>
+&ndash; type &ndash; тип в бд ({varchar, 255}, decimal, int, text, bigint, &hellip;)<br/>
+&ndash; required &ndash; аналог NOT NULL (boolean)<br/>
+&ndash; readOnly &ndash; удобная опция, в случае если поле нельзя обновлять, например id, который генерируется через serial или timestamp через now()<br/>
+&ndash; index &ndash; поле является индексом, или частью составного индекса (boolean)<br/>
+&ndash; &hellip; &ndash; что угодно. Т.к. Opts &ndash; это map(), то можно добавлять свои опции по желанию.</p>
+
+<p>К этому моменту у меня примерно прояснилась картина, как я хочу видеть код.</p>
+
+<p><code>erlang
+Query1 = from(Schema),
+Query2 = filter(Query1),
+...
+Result = select(QueryN)
+</code></p>
+
+<p>Скорее всего делать внутреннее представление SQL придется через какой-то промежуточный AST, но, у меня есть одно важное требование &ndash; легкое добавление SQL конструкций, которых еще нет в моей библиотеке.
+Делать полноценный AST который потом бы компилировался в SQL или во что-то еще я не хочу. У меня есть postgresql и это все что мне нужно на данный момент.
+При такой постановке вопроса проектировать решение становится заметно проще :)
+Я взял на вооружение подход из моей предыдущей ORM &ndash; добавить дополнительную разметку прямо в SQL</p>
+
+<p>Возьмем пример:</p>
+
+<p><code>
+select sum(o.sum), u.name from users as u join orders o on o.user_id = u.id where u.age &gt; 18 group by u.name
+</code></p>
+
+<p>Что понадобится?<br/>
+Ключевые слова, операции, пробелы, запятые и прочее что должно быть встроено &ldquo;как есть&rdquo; назовем raw (в equery &ndash; <code>{'$raw', iolist()}</code> ).<br/>
+Названия таблиц повторяются часто и не хотелось бы чтобы при объединении запросов были проблемы с одинаковыми псевдонимами поэтому есть 2 варианта:<br/>
+1. генерировать уникальные псевдонимы по ходу построения запроса<br/>
+2. генерировать их в самом конце &ndash; при генерации sql, а в ast использовать уникальную &ldquo;ссылку&rdquo;</p>
+
+<p>Т.к. posgresql кэширует план запросов &ndash; то нужно чтобы один и тот же код каждый раз давал один и тот же результат.<br/>
+Следовательно решение 1 отпадает и вводим дополнительную конструкцию {table, UniqueRef} там где нужно ссылаться на поля таблиц. (в equery &ndash; <code>{'$table', ref()}</code>)<br/>
+Чтобы как-то группировать несколько синтаксических конструкций в одну добавим выражение {exp, [Nodes]} (в equery &ndash; <code>{'$exp', ref()}</code>)<br/>
+Все остальное считаем данными и при генерации SQL будем их собирать в отдельном списке, а в SQL на этом месте проставлять  ссылки на аргументы <code>$1, $2, ...</code></p>
+
+<p>В результате sql из примера превращается в AST:</p>
+
+<p>```erlang
+{exp, [</p>
+
+<pre><code>{raw, "select "},
+{exp, [
+    {raw, "sum("},
+        {exp, [{table, Ref2},{raw, "."},{raw, "sum"}]},
+    {raw, ")"}
+]}
+{raw, ","},
+{exp, [{table, Ref1},{raw, "."},{raw, "name"}]},
+{raw, " from users as "}, {table, Ref1},
+{raw, " join orders as"}, {table, Ref2}, 
+{raw, " on "},
+{exp, [
+    {exp, [{table, Ref2},{raw, "."},{raw, "user_id"}]},
+    {raw, " = "},
+    {exp, [{table, Ref1},{raw, "."},{raw, "id"}]},
+]},
+{raw, " where "},
+{exp, [
+    {exp, [{table, Ref1},{raw, "."},{raw, "age"}]},
+    {raw, " = "},
+    18
+]},
+{raw, " group by"},
+{exp, [{table, Ref1},{raw, "."},{raw, "name"}]}
+</code></pre>
+
+<p>]}
+```</p>
+
+<p>Как преобразовать такое представление в SQL + Args, думаю вполне очевидно.
+А вот как строить его с помощью erlang?</p>
+
+<p>Для начала нам понадобятся схемы для таблиц:</p>
+
+<p>```
+UserSchema = #{</p>
+
+<pre><code>fields =&gt; #{
+    id =&gt; #{type =&gt; int, index =&gt; true, required =&gt; true, readOnly =&gt; true},
+    name =&gt; #{type =&gt; {varchar, 255}, required =&gt; true},
+    age =&gt; #{type =&gt; int}
+},
+table =&gt; &lt;&lt;"users"&gt;&gt;
+</code></pre>
+
+<p>}.</p>
+
+<p>OrderSchema = #{</p>
+
+<pre><code>fields =&gt; #{
+    id =&gt; #{type =&gt; int, index =&gt; true, required =&gt; true, readOnly =&gt; true},
+    user_id =&gt; #{type =&gt; int, required =&gt; true},
+    sum =&gt; #{type =&gt; number, required =&gt; true}
+},
+table =&gt; &lt;&lt;"orders"&gt;&gt;
+</code></pre>
+
+<p>}
+```</p>
+
+<p>Начнем с того, что должна делать функция <code>from(Schema)</code></p>
+
+<p><code>erlang
+Query1 = from(UserSchema).
+</code></p>
+
+<p>В AST видны повторяющиеся конструкции для ссылок на поля <code>{exp, [{table, Ref1},{raw, "."},{raw, "name"}]}</code>.
+Следовательно, нужно сгенерировать Ref1 и для каждого поля из схемы построить такое AST выражение.
+Получится map, который я называю TableData:</p>
+
+<p>```erlang
+Ref1 = make_ref(),</p>
+
+<h1>{</h1>
+
+<pre><code>id   =&gt; {exp, [{table, Ref1},{raw, "."},{raw, "id"}]},
+name =&gt; {exp, [{table, Ref1},{raw, "."},{raw, "name"}]},
+age  =&gt; {exp, [{table, Ref1},{raw, "."},{raw, "age"}]},
+</code></pre>
+
+<p>}
+```</p>
+
+<p>теперь про функции. Для реализации текущего запроса нам нужны функции <code>sum</code> и <code>=</code>. Выглядят они очень просто:</p>
+
+<p>```erlang
+sum(Field) &ndash;></p>
+
+<pre><code>{exp, [{raw, "sum("}, F, {raw, ")"}]}.
+</code></pre>
+
+<p>&lsquo;=:=&rsquo;(A, B) &ndash;></p>
+
+<pre><code>{exp, [A, {raw, " = "}, B]}.
+</code></pre>
+
+<p>```</p>
+
+<p>Как строить where?
+Я сделал функцию <code>where(Fun, Query)</code> принимающую Fun, в которую передается несколько TableData уже участвующих в запросе, а на выходе AST для where выражения.
+Результирующий AST добавляется через and к тому, который уже хранится в Query.</p>
+
+<p><code>
+Query2 = where(fun([#{age := Age}]) -&gt; '=:='(Age, 18) end, Query1).
+</code></p>
+
+<p>С join поступим похожим образом,</p>
+
+<p><code>erlang
+Query3 = join(OrderSchema, fun([#{id := Id}, #{user_id := UserId}]) -&gt; '=:='(Id, UserId) end, Query2).
+</code></p>
+
+<p>для OrderSchema создается OrderTableData и вместе с UserTableData, которая уже есть в запросе передается в callback.</p>
+
+<p>Что касается group by то функция тоже очень похожа на предыдущие только возвращает не AST, а массив в котором описано по каким полям группировать</p>
+
+<p><code>erlang
+Query4 = group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end, Query3).
+</code></p>
+
+<p>Осталось сделать select. Функция не будет исключением и работает по сходным правила</p>
+
+<p><code>erlang
+Query5 = select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; sum(OrderSum)} end, Query4)
+</code>
+select callback возвращает описание результата &ndash; это может быть или map или одно поле (удобно для count).</p>
+
+<p>Query готов. Осталось только на основе него сгенерировать итоговый Select AST и преобразовать его в SQL. Этим займемся чуть позже.
+А пока приведу код запроса полностью и попробуем сделать его чуть-чуть красивее.</p>
+
+<p><code>erlang
+Query1 = from(UserSchema),
+Query2 = where(fun([#{age := Age}]) -&gt; '=:='(Age, 18) end, Query1),
+Query3 = join(OrderSchema, fun([#{id := Id}, #{user_id := UserId}]) -&gt; '=:='(Id, UserId) end, Query2),
+Query4 = group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end, Query3),
+Query5 = select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; sum(OrderSum)} end, Query4)
+</code></p>
+
+<p>Во-первых, давайте перенесем все функции, модифицирующие запрос в отдельный модуль. Для лаконичности q.erl
+Функции, которые генерирую postgresql AST для операций в другой модуль &ndash; pg_sql.erl</p>
+
+<p><code>erlang
+Query1 = q:from(UserSchema),
+Query2 = q:where(fun([#{age := Age}]) -&gt; pg_sql:'=:='(Age, 18) end, Query1),
+Query3 = q:join(OrderSchema, fun([#{id := Id}, #{user_id := UserId}]) -&gt; pg_sql:'=:='(Id, UserId) end, Query2),
+Query4 = q:group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end, Query3),
+Query5 = q:select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; pg_sql:sum(OrderSum)} end, Query4)
+</code></p>
+
+<p>Во-вторых, передавать схему как map не совсем практично. В дальнейшем нам понадобится больше функционала для моделей. Поэтому перенесем каждую схему в свой модуль.
+Я использую префикс <strong>m_</strong> и функцию <code>schema/0</code>.</p>
+
+<p>m_user.erl
+```erlang
+-module(m_user).
+-export([schema/0]).</p>
+
+<p>schema() &ndash;></p>
+
+<pre><code>#{
+    fields =&gt; #{
+        id =&gt; #{type =&gt; int, index =&gt; true, required =&gt; true, readOnly =&gt; true},
+        name =&gt; #{type =&gt; {varchar, 255}, required =&gt; true},
+        age =&gt; #{type =&gt; int}
+    },
+    table =&gt; &lt;&lt;"users"&gt;&gt;
+}.
+</code></pre>
+
+<p>```</p>
+
+<p>m_order.erl
+```erlang
+-module(m_order).
+-export([schema/0]).</p>
+
+<p>schema() &ndash;></p>
+
+<pre><code>#{
+    fields =&gt; #{
+        id =&gt; #{type =&gt; int, index =&gt; true, required =&gt; true, readOnly =&gt; true},
+        user_id =&gt; #{type =&gt; int, required =&gt; true},
+        sum =&gt; #{type =&gt; number, required =&gt; true}
+    },
+    table =&gt; &lt;&lt;"orders"&gt;&gt;
+}.
+</code></pre>
+
+<p>```</p>
+
+<p>попутно обучим функции, которые принимали схему принимать модуль и дергать Module:schema() при этом.</p>
+
+<p>Теперь возьмемся за то, что ломает глаза и бесит многих, кто приходит в erlang из других языков: повторы QueryN.
+Ну как решать эту проблему мы-то знаем ;)
+В elixir для этого существует pipe оператор <code>|&gt;</code>, в erlang его нет, но можно сделать по-другому:</p>
+
+<p>```erlang
+pipe(State, Funs) &ndash;></p>
+
+<pre><code>lists:foldl(fun(F, St) -&gt; F(St) end, State, Funs).
+</code></pre>
+
+<p>```</p>
+
+<p>а для каждой функции из q заведем каррированый аналог.</p>
+
+<p><code>f(Fun, Query).</code> => <code>f(Fun) -&gt; fun(Query) -&gt; f(Fun, Query) end.</code></p>
+
+<p>получилось:</p>
+
+<p>```erlang
+q:pipe(q:from(m_user), [</p>
+
+<pre><code>q:where(fun([#{age := Age}]) -&gt; pg_sql:'=:='(Age, 18) end),
+q:join(m_order, fun([#{id := Id}, #{user_id := UserId}]) -&gt; pg_sql:'=:='(Id, UserId) end),
+q:group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end),
+q:select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; pg_sql:sum(OrderSum)} end)
+</code></pre>
+
+<p>]).
+```</p>
+
+<p>теперь можно легко переставлять выражения (но порядок все-таки важен)</p>
+
+<p>```erlang
+q:pipe(q:from(m_user), [</p>
+
+<pre><code>q:join(m_order, fun([#{id := Id}, #{user_id := UserId}]) -&gt; pg_sql:'=:='(Id, UserId) end),
+q:select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; pg_sql:sum(OrderSum)} end),
+q:group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end),
+q:where(fun([#{age := Age}]) -&gt; pg_sql:'=:='(Age, 18) end)
+</code></pre>
+
+<p>]).
+```</p>
+
+<p>Получился вполне удобный язык запросов, который удовлетворяет всем требованиям которые я описал выше.
+Все это и немного больше находится в библиотеке <a href="https://github.com/egobrain/equery">equery</a>
+и пока ее возможностей хватает чтобы покрыть 95% того что мне сейчас нужно (5% &ndash; это union, которых пока нет и выборка из нескольких таблиц <code>select * from table1, table2, ...</code> , но поддержка появится в скором будущем)</p>
+
+<p>Маленький бонус. Для тех, кому как и мне, не совсем приятно и удобно читать выражения вида</p>
+
+<p>```erlang
+pg_sql:&lsquo;andalso&rsquo;(</p>
+
+<pre><code>pg_sql:'&gt;=(Age, 18),
+pg_sql:'=&lt;'(Age, 25)
+</code></pre>
+
+<p>)
+```</p>
+
+<p>я реализовал parse_transform, который в q callback-ах позволяет писать код в erlang стиле</p>
+
+<p><code>erlang
+Age &gt;= 18 andalso Age =&lt; 25
+</code></p>
+
+<p><strong>работает даже в repl !!!</strong> :)</p>
+
+<p>с ним наш запрос будет выглядеть так:</p>
+
+<p>```erlang</p>
+
+<p>-include_lib(&ldquo;equery/include/equery.hrl&rdquo;).</p>
+
+<p>Query = q:pipe(q:from(m_user), [</p>
+
+<pre><code>q:where(fun([#{age := Age}]) -&gt; Age =:= 18 end),                                                %% Изменения тут
+q:join(m_order, fun([#{id := Id}, #{user_id := UserId}]) -&gt; Id =:= UserId end),      %%  и тут
+q:group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end),
+q:select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; pg_sql:sum(OrderSum)} end)
+</code></pre>
+
+<p>]).
+```</p>
+
+<p>Чтобы получить AST для select запроса нужно вызвать qsql:select/1. А чтобы получить SQL qast:to_sql/1.</p>
+
+<p>```erlang
+qast:to_sql(qsql:select(Query)).</p>
+
+<p>{&lt;&lt;&ldquo;select \&rdquo;<strong>table-0\&ldquo;.\"name\&rdquo;,sum(\&ldquo;</strong>table-1\&rdquo;.\&ldquo;sum\&rdquo;) from \&ldquo;users\&rdquo; as \&ldquo;<strong>table-0\&rdquo; inner join \&ldquo;orders\&rdquo; as \&ldquo;</strong>table-1\&rdquo; on (\&ldquo;<strong>table-0\&rdquo;.\&ldquo;id\&rdquo; = \&ldquo;</strong>table-1\&rdquo;.\&ldquo;user_id\&rdquo;) where (\&ldquo;<strong>table-0\&rdquo;.\&ldquo;age\&rdquo; = $1) group by \&ldquo;</strong>table-0\&rdquo;.\&ldquo;name\&rdquo;&ldquo;>>,  [18]}
+```</p>
+
+<h1>REPO</h1>
+
+<p>Генерация запросов это хорошо, но хочется еще добавлять, изменять, удалять сущности из БД.
+Хочется исполнять запросы через pool, иметь хуки на сохранение и т.п.
+Для этого всего я реализовал библиотеку <a href="https://github.com/egobrain/repo">repo</a>.
+Она построена поверх <a href="https://github.com/egobrain/equery">equery</a> and <a href="https://github.com/egobrain/epgpool">epgpool</a></p>
+
+<h2>Select</h2>
+
+<p>С select запросами все совсем просто: пишешь запрос и он исполняется.</p>
+
+<p>```
+repo:all(m_user, [</p>
+
+<pre><code>q:where(fun([#{age := Age}]) -&gt; Age =:= 18 end),   
+q:join(m_order, fun([#{id := Id}, #{user_id := UserId}]) -&gt; Id =:= UserId end),
+q:group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end),
+q:select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; pg_sql:sum(OrderSum)} end)
+</code></pre>
+
+<p>]).
+```</p>
+
+<p>Довольно часто нужно выбрать сущности по какому-то полю или набору полей, например по id. Изначально для этого нужно писать where запрос</p>
+
+<p>```erlang
+repo:all(m_user, [</p>
+
+<pre><code>q:where(fun([#{id := Id}]) -&gt; Id =:= 123 end)
+</code></pre>
+
+<p>]).
+```
+но, благодаря тому, что запросы легко строить динамически можно добавить немного сахара:</p>
+
+<p>```erlang
+like(Map) &ndash;></p>
+
+<pre><code>q:where(fun([M|_]) -&gt;
+    maps:fold(
+        fun(K, V, S) -&gt;
+            case maps:find(K, M) of
+                {ok, V2} -&gt; S andalso V =:= V2;
+                error -&gt; S
+            end
+        end, true, Map)
+end).
+</code></pre>
+
+<p>repo:all(m_user, [ like(#{id => 123} ]).
+```</p>
+
+<p>я пошел еще дальше и repo api принимает map на вход.</p>
+
+<p><code>erlang
+repo:all(m_user, #{id =&gt; 123}). %% просто, понятно, лаконично
+</code></p>
+
+<p>для поиска единственного элемента есть функция get_one</p>
+
+<p><code>erlang
+{ok, User} = repo:get_one(m_user, #{id =&gt; 123}).
+</code></p>
+
+<p>Если результат запроса слишком большой, но при этом его можно обрабатывать потоково (например вывод отчета с большим количеством полей) то желательно использовать потоковое api через <a href="https://github.com/egobrain/zlist">zlist</a>,
+что сильно уменьшает latency и потребление памяти, т.к. данные из БД подгружаются пачками по мере необходимости</p>
+
+<p>```erlang
+repo:all(m_user, [q:where(fun([#{age := Age}]) &ndash;> Age > 18 end)], fun(ZList) &ndash;></p>
+
+<pre><code>zlist:foreach(fun(#{name := Name, age := Age}) -&gt; io:format("User: ~p, ~p\n", [Name, Age]) end, Zlist)
+</code></pre>
+
+<p>end).
+```</p>
+
+<p>Чуть не забыл. С помощью repo_utils:preload/1 можно подгружать данные из зависимых таблиц (has_many, belongs_to). Например:</p>
+
+<p>```erlang
+-module(m_user).
+-export([schema/0]).</p>
+
+<p>schema() &ndash;></p>
+
+<pre><code>#{
+    fields =&gt; #{
+        id =&gt; #{type =&gt; int, index =&gt; true, required =&gt; true, readOnly =&gt; true},
+        name =&gt; #{type =&gt; {varchar, 255}, required =&gt; true},
+        age =&gt; #{type =&gt; int}
+    },
+    links =&gt; #{
+        orders =&gt; {has_many, m_order, #{id =&gt; user_id}}
+    },
+    table =&gt; &lt;&lt;"users"&gt;&gt;
+}.
+</code></pre>
+
+<p>```</p>
+
+<p>запрос
+```erlang
+repo:all(m_user, [</p>
+
+<pre><code>repo_utils:preload(orders)
+</code></pre>
+
+<p>]).
+```</p>
+
+<p>вернет подобную структуру
+```erlang
+[#{</p>
+
+<pre><code>id =&gt; UserId,
+name =&gt; UserName,
+age =&gt; UserAge,
+orders =&gt; [
+     #{id =&gt; OrderId1,  user_id =&gt; UserId, sum =&gt; Sum1},
+     #{id =&gt; OrderId2,  user_id =&gt; UserId, sum =&gt; Sum2},
+     ...
+</code></pre>
+
+<p> },
+ &hellip; Other users &hellip;
+].
+```</p>
+
+<p>и все это одним SQL запросом.</p>
+
+<h2>Insert/Update/Upsert</h2>
+
+<p>С insert/update все очень просто. API принимает один или несколько объектов и по-умолчанию возвращает их же (через sql returnging)</p>
+
+<p><code>erlang
+repo:insert(m_user, [#{name =&gt; &lt;&lt;"Alladin"&gt;&gt;, age =&gt; 25}, ...]).
+</code></p>
+
+<p><code>erlang
+repo:update(m_user, [#{id = 238, name =&gt; &lt;&lt;"Masha"&gt;&gt;, age =&gt; 18}, ...]).
+</code></p>
+
+<p><code>erlang
+repo:upsert(m_user, [#{id = 239, name =&gt; &lt;&lt;"Igor"&gt;&gt;, age =&gt; 18}, ...]).
+</code></p>
+
+<p>Хочется добавить, что для каждой модели можно, при необходимости, объявить <code>before_save/2</code> и <code>after_save/2</code> hook-и
+и, если хочется хранить сущности не в мапах, а, скажем, в record-ах, для этого есть <code>from_db/1</code> и <code>to_db/1</code> (для примера смотри <a href="https://github.com/egobrain/repo/blob/0.4.0/test/models/m_user.erl#L31">common тесты</a>)</p>
+
+<h2>Batch update</h2>
+
+<p>Можно обновлять сущности пачкой, а не по одному:</p>
+
+<p><code>erlang
+repo:set(m_user, [
+   q:set(fun([#{age := Age}]) -&gt; #{age =&gt; Age * 2 } end)
+]).
+</code></p>
+
+<h2>Batch delete</h2>
+
+<p>Удаляются данные только пачкой.</p>
+
+<p><code>erlang
+repo:delete(m_user, [
+   q:where(fun([#{age := Age}]) -&gt; Age &gt; 99 end)
+]).
+</code></p>
+
+<h2>Резюме</h2>
+
+<p>На данный момент я не считаю что реализация repo идеальна и эталонна, но она решает большую часть повседневных задач стоящих в моих проектах и уже успешно используется в production.
+Нет ничего плохого в том, чтобы форкуть его и заменить, докрутить его части так как это необходимо именно вам, т.к. проект очень маленький и при этом ~100% покрыт тестами.</p>
+
+<p>При этом проект позволил полностью избавиться от генерации SQL вручную (кроме миграций) и заметно сократить общий объем кодовой базы.
+Стоит однако понимать, что библиотека equery не контролирует ошибки генерации sql, зато дает больший контроль во взаимодействии с Postgresql т.к. вы можете самостоятельно реализовать почти любую синтаксическую конструкцию. Вам необходимо понимать что и как происходи и где копать в случае проблем. Именно поэтому я привел описание как все работает выше.
+Хорошо это или нет &ndash; решать вам.</p>
+
+<h1>Дальнейшие планы</h1>
+
+<p>Предстоит еще не мало работы:<br/>
+&ndash; добавить unioun, multiple from в equery<br/>
+&ndash; покрыть все спеками и dialyzer тестами<br/>
+&ndash; написать документацию<br/>
+&ndash; добавить больше common операций в equery pg_sql.erl<br/>
+&ndash; реализовать dbschema-repo addon чтобы автоматически генерировать миграции для изменения схем</p>
+
+<p>Основным недостатком (вероятно для некоторых) что проект ориентирован только на Posgresql и при том 9.5 версии (из-за upsert)</p>
+
+<p>Буду рад комментариям и PR :)</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Erlang ORM. Часть 2]]></title>

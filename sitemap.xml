@@ -4,38 +4,42 @@
         <loc>
             http://www.egobrain.ru/blog/2014/02/13/obrabotka-oshibok-poumolchaniiu-angularjs/
         </loc>
-        <lastmod>2014-02-25T23:32:58+04:00</lastmod>
+        <lastmod>2016-06-03T21:44:18+03:00</lastmod>
     </url>
     <url>
         <loc>http://www.egobrain.ru/blog/2014/02/19/erlang-orm-part-1/</loc>
-        <lastmod>2014-02-25T23:32:58+04:00</lastmod>
+        <lastmod>2016-06-03T21:44:18+03:00</lastmod>
     </url>
     <url>
         <loc>http://www.egobrain.ru/blog/2014/02/26/erlang-orm-part-2/</loc>
-        <lastmod>2014-02-26T01:50:54+04:00</lastmod>
+        <lastmod>2016-06-03T21:44:18+03:00</lastmod>
+    </url>
+    <url>
+        <loc>http://www.egobrain.ru/blog/2016/06/02/erlang-orm-part-3/</loc>
+        <lastmod>2016-06-03T22:27:18+03:00</lastmod>
     </url>
     <url>
         <loc>http://www.egobrain.ru/about/</loc>
-        <lastmod>2014-02-25T23:32:58+04:00</lastmod>
+        <lastmod>2016-06-03T21:52:40+03:00</lastmod>
     </url>
     <url>
         <loc>http://www.egobrain.ru/</loc>
-        <lastmod>2014-02-26T01:50:54+04:00</lastmod>
-    </url>
-    <url>
-        <loc>http://www.egobrain.ru/blog/</loc>
-        <lastmod>2014-02-26T01:50:54+04:00</lastmod>
-    </url>
-    <url>
-        <loc>http://www.egobrain.ru/blog/archives/</loc>
-        <lastmod>2014-02-26T01:50:54+04:00</lastmod>
+        <lastmod>2016-06-03T22:27:18+03:00</lastmod>
     </url>
     <url>
         <loc>http://www.egobrain.ru/robots.txt</loc>
-        <lastmod>2014-02-25T23:32:53+04:00</lastmod>
+        <lastmod>2016-06-03T21:44:18+03:00</lastmod>
+    </url>
+    <url>
+        <loc>http://www.egobrain.ru/blog/archives/</loc>
+        <lastmod>2016-06-03T22:27:18+03:00</lastmod>
+    </url>
+    <url>
+        <loc>http://www.egobrain.ru/blog/</loc>
+        <lastmod>2016-06-03T22:27:18+03:00</lastmod>
     </url>
     <url>
         <loc>http://www.egobrain.ru/fp.xml</loc>
-        <lastmod>2014-02-25T23:32:58+04:00</lastmod>
+        <lastmod>2016-02-21T23:57:52+03:00</lastmod>
     </url>
 </urlset>

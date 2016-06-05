@@ -4,7 +4,7 @@
   <title><![CDATA[Egobrain]]></title>
   <link href="http://www.egobrain.ru/atom.xml" rel="self"/>
   <link href="http://www.egobrain.ru/"/>
-  <updated>2016-06-03T22:27:32+03:00</updated>
+  <updated>2016-06-05T16:59:28+03:00</updated>
   <id>http://www.egobrain.ru/</id>
   <author>
     <name><![CDATA[Kozlov Yakov]]></name>
@@ -42,6 +42,9 @@
 
 <p>Сегодня я расскажу про <a href="https://github.com/egobrain/repo">repo</a> и <a href="https://github.com/egobrain/equery">equery</a>.</p>
 
+<!-- more -->
+
+
 <h1>Equery</h1>
 
 <p>Какие проблемы с ручным написанием sql?<br/>
@@ -54,7 +57,7 @@
 <p>Итак, понадобится сущность, которая будет описывать структуру таблицы SQL (Благо в Erlang r17 появились мапы и с ними жизнь стала намного легче).
 Решение в лоб</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -80,7 +83,7 @@
 
 <p>К этому моменту у меня примерно прояснилась картина, как я хочу видеть код.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -98,8 +101,8 @@
 
 <p>Возьмем пример:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="n">select</span> <span class="n">sum</span><span class="p">(</span><span class="n">o</span><span class="p">.</span><span class="n">sum</span><span class="p">),</span> <span class="n">u</span><span class="p">.</span><span class="n">name</span> <span class="n">from</span> <span class="n">users</span> <span class="n">as</span> <span class="n">u</span> <span class="n">join</span> <span class="n">orders</span> <span class="n">o</span> <span class="n">on</span> <span class="n">o</span><span class="p">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">u</span><span class="p">.</span><span class="n">id</span> <span class="n">where</span> <span class="n">u</span><span class="p">.</span><span class="n">age</span> <span class="o">&gt;</span> <span class="mi">18</span> <span class="n">group</span> <span class="n">by</span> <span class="n">u</span><span class="p">.</span><span class="n">name</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='psql'><span class='line'><span class="k">select</span> <span class="n">sum</span><span class="p">(</span><span class="n">o</span><span class="mf">.</span><span class="n">sum</span><span class="p">),</span> <span class="n">u</span><span class="mf">.</span><span class="k">name</span> <span class="k">from</span> <span class="n">users</span> <span class="k">as</span> <span class="n">u</span> <span class="k">join</span> <span class="n">orders</span> <span class="n">o</span> <span class="k">on</span> <span class="n">o</span><span class="mf">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">u</span><span class="mf">.</span><span class="n">id</span> <span class="k">where</span> <span class="n">u</span><span class="mf">.</span><span class="n">age</span> <span class="o">&gt;</span> <span class="mf">18</span> <span class="k">group</span> <span class="k">by</span> <span class="n">u</span><span class="mf">.</span><span class="k">name</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -116,7 +119,7 @@
 
 <p>В результате sql из примера превращается в AST:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -176,7 +179,7 @@
 
 <p>Для начала нам понадобятся схемы для таблиц:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -215,7 +218,7 @@
 
 <p>Начнем с того, что должна делать функция <code>from(Schema)</code></p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nv">Query1</span> <span class="o">=</span> <span class="n">from</span><span class="p">(</span><span class="nv">UserSchema</span><span class="p">).</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -224,7 +227,7 @@
 Следовательно, нужно сгенерировать Ref1 и для каждого поля из схемы построить такое AST выражение.
 Получится map, который я называю TableData:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -241,7 +244,7 @@
 
 <p>теперь про функции. Для реализации текущего запроса нам нужны функции <code>sum</code> и <code>=</code>. Выглядят они очень просто:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -258,14 +261,14 @@
 Я сделал функцию <code>where(Fun, Query)</code> принимающую Fun, в которую передается несколько TableData уже участвующих в запросе, а на выходе AST для where выражения.
 Результирующий AST добавляется через and к тому, который уже хранится в Query.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nv">Query2</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">}])</span> <span class="o">-&gt;</span> <span class="n">&#39;=:=&#39;</span><span class="p">(</span><span class="nv">Age</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query1</span><span class="p">).</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
 <p>С join поступим похожим образом,</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nv">Query3</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="nv">OrderSchema</span><span class="p">,</span> <span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Id</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">user_id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">UserId</span><span class="p">}])</span> <span class="o">-&gt;</span> <span class="n">&#39;=:=&#39;</span><span class="p">(</span><span class="nv">Id</span><span class="p">,</span> <span class="nv">UserId</span><span class="p">)</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query2</span><span class="p">).</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -274,14 +277,14 @@
 
 <p>Что касается group by то функция тоже очень похожа на предыдущие только возвращает не AST, а массив в котором описано по каким полям группировать</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nv">Query4</span> <span class="o">=</span> <span class="n">group_by</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="p">_</span><span class="nv">OrdersTableData</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="nv">Name</span><span class="p">]</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query3</span><span class="p">).</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
 <p>Осталось сделать select. Функция не будет исключением и работает по сходным правила</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nv">Query5</span> <span class="o">=</span> <span class="n">select</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">sum</span> <span class="p">:</span><span class="o">=</span> <span class="nv">OrderSum</span><span class="p">}])</span> <span class="o">-&gt;</span> <span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="o">=&gt;</span> <span class="nv">Name</span><span class="p">,</span> <span class="n">sum</span> <span class="o">=&gt;</span> <span class="n">sum</span><span class="p">(</span><span class="nv">OrderSum</span><span class="p">)}</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query4</span><span class="p">)</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -291,7 +294,7 @@
 <p>Query готов. Осталось только на основе него сгенерировать итоговый Select AST и преобразовать его в SQL. Этим займемся чуть позже.
 А пока приведу код запроса полностью и попробуем сделать его чуть-чуть красивее.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -307,7 +310,7 @@
 <p>Во-первых, давайте перенесем все функции, модифицирующие запрос в отдельный модуль. Для лаконичности q.erl
 Функции, которые генерирую postgresql AST для операций в другой модуль &ndash; pg_sql.erl</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -323,9 +326,8 @@
 <p>Во-вторых, передавать схему как map не совсем практично. В дальнейшем нам понадобится больше функционала для моделей. Поэтому перенесем каждую схему в свой модуль.
 Я использую префикс <strong>m_</strong> и функцию <code>schema/0</code>.</p>
 
-<p>m_user.erl</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><figcaption><span>m_user.erl </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -337,6 +339,7 @@
 <span class='line-number'>10</span>
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
+<span class='line-number'>13</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">m_user</span><span class="p">).</span>
 </span><span class='line'><span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">schema</span><span class="o">/</span><span class="mi">0</span><span class="p">]).</span>
 </span><span class='line'>
@@ -349,12 +352,14 @@
 </span><span class='line'>        <span class="p">},</span>
 </span><span class='line'>        <span class="n">table</span> <span class="o">=&gt;</span> <span class="o">&lt;&lt;</span><span class="s">&quot;users&quot;</span><span class="o">&gt;&gt;</span>
 </span><span class='line'>    <span class="p">}.</span>
+</span><span class='line'>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>m_order.erl</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+
+<figure class='code'><figcaption><span>m_order.erl </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -387,7 +392,7 @@
 Ну как решать эту проблему мы-то знаем ;)
 В elixir для этого существует pipe оператор <code>|&gt;</code>, в erlang его нет, но можно сделать по-другому:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nf">pipe</span><span class="p">(</span><span class="nv">State</span><span class="p">,</span> <span class="nv">Funs</span><span class="p">)</span> <span class="o">-&gt;</span>
 </span><span class='line'>    <span class="nn">lists</span><span class="p">:</span><span class="nf">foldl</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">F</span><span class="p">,</span> <span class="nv">St</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">F</span><span class="p">(</span><span class="nv">St</span><span class="p">)</span> <span class="k">end</span><span class="p">,</span> <span class="nv">State</span><span class="p">,</span> <span class="nv">Funs</span><span class="p">).</span>
@@ -400,7 +405,7 @@
 
 <p>получилось:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -417,7 +422,7 @@
 
 <p>теперь можно легко переставлять выражения (но порядок все-таки важен)</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -438,7 +443,7 @@
 
 <p>Маленький бонус. Для тех, кому как и мне, не совсем приятно и удобно читать выражения вида</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -451,7 +456,7 @@
 
 <p>я реализовал parse_transform, который в q callback-ах позволяет писать код в erlang стиле</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nv">Age</span> <span class="o">&gt;=</span> <span class="mi">18</span> <span class="ow">andalso</span> <span class="nv">Age</span> <span class="o">=&lt;</span> <span class="mi">25</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -460,7 +465,7 @@
 
 <p>с ним наш запрос будет выглядеть так:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -481,7 +486,7 @@
 
 <p>Чтобы получить AST для select запроса нужно вызвать qsql:select/1. А чтобы получить SQL qast:to_sql/1.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nn">qast</span><span class="p">:</span><span class="nf">to_sql</span><span class="p">(</span><span class="nn">qsql</span><span class="p">:</span><span class="nf">select</span><span class="p">(</span><span class="nv">Query</span><span class="p">)).</span>
@@ -501,7 +506,7 @@
 
 <p>С select запросами все совсем просто: пишешь запрос и он исполняется.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -518,7 +523,7 @@
 
 <p>Довольно часто нужно выбрать сущности по какому-то полю или набору полей, например по id. Изначально для этого нужно писать where запрос</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nn">repo</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span>
@@ -529,7 +534,7 @@
 
 <p>но, благодаря тому, что запросы легко строить динамически можно добавить немного сахара:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -558,14 +563,14 @@
 
 <p>я пошел еще дальше и repo api принимает map на вход.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nn">repo</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="o">=&gt;</span> <span class="mi">123</span><span class="p">}).</span> <span class="c">%% просто, понятно, лаконично</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
 <p>для поиска единственного элемента есть функция get_one</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="p">{</span><span class="n">ok</span><span class="p">,</span> <span class="nv">User</span><span class="p">}</span> <span class="o">=</span> <span class="nn">repo</span><span class="p">:</span><span class="nf">get_one</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="o">=&gt;</span> <span class="mi">123</span><span class="p">}).</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -573,7 +578,7 @@
 <p>Если результат запроса слишком большой, но при этом его можно обрабатывать потоково (например вывод отчета с большим количеством полей) то желательно использовать потоковое api через <a href="https://github.com/egobrain/zlist">zlist</a>,
 что сильно уменьшает latency и потребление памяти, т.к. данные из БД подгружаются пачками по мере необходимости</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nn">repo</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span><span class="nn">q</span><span class="p">:</span><span class="nf">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">}])</span> <span class="o">-&gt;</span> <span class="nv">Age</span> <span class="o">&gt;</span> <span class="mi">18</span> <span class="k">end</span><span class="p">)],</span> <span class="k">fun</span><span class="p">(</span><span class="nv">ZList</span><span class="p">)</span> <span class="o">-&gt;</span>
@@ -584,7 +589,7 @@
 
 <p>Чуть не забыл. С помощью repo_utils:preload/1 можно подгружать данные из зависимых таблиц (has_many, belongs_to). Например:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -619,7 +624,7 @@
 
 <p>запрос</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nn">repo</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span>
@@ -630,7 +635,7 @@
 
 <p>вернет подобную структуру</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
@@ -661,21 +666,21 @@
 
 <p>С insert/update все очень просто. API принимает один или несколько объектов и по-умолчанию возвращает их же (через sql returnging)</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nn">repo</span><span class="p">:</span><span class="nf">insert</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="o">=&gt;</span> <span class="o">&lt;&lt;</span><span class="s">&quot;Alladin&quot;</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">age</span> <span class="o">=&gt;</span> <span class="mi">25</span><span class="p">},</span> <span class="p">...]).</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
 
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nn">repo</span><span class="p">:</span><span class="nf">update</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="o">=</span> <span class="mi">238</span><span class="p">,</span> <span class="n">name</span> <span class="o">=&gt;</span> <span class="o">&lt;&lt;</span><span class="s">&quot;Masha&quot;</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">age</span> <span class="o">=&gt;</span> <span class="mi">18</span><span class="p">},</span> <span class="p">...]).</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
 
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nn">repo</span><span class="p">:</span><span class="nf">upsert</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="o">=</span> <span class="mi">239</span><span class="p">,</span> <span class="n">name</span> <span class="o">=&gt;</span> <span class="o">&lt;&lt;</span><span class="s">&quot;Igor&quot;</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">age</span> <span class="o">=&gt;</span> <span class="mi">18</span><span class="p">},</span> <span class="p">...]).</span>
 </span></code></pre></td></tr></table></div></figure>
 
@@ -687,7 +692,7 @@
 
 <p>Можно обновлять сущности пачкой, а не по одному:</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nn">repo</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span>
@@ -700,7 +705,7 @@
 
 <p>Удаляются данные только пачкой.</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 </pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="nn">repo</span><span class="p">:</span><span class="nf">delete</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span>
@@ -715,7 +720,7 @@
 Нет ничего плохого в том, чтобы форкуть его и заменить, докрутить его части так как это необходимо именно вам, т.к. проект очень маленький и при этом ~100% покрыт тестами.</p>
 
 <p>При этом проект позволил полностью избавиться от генерации SQL вручную (кроме миграций) и заметно сократить общий объем кодовой базы.
-Стоит однако понимать, что библиотека equery не контролирует ошибки генерации sql, зато дает больший контроль во взаимодействии с Postgresql т.к. вы можете самостоятельно реализовать почти любую синтаксическую конструкцию. Вам необходимо понимать что и как происходи и где копать в случае проблем. Именно поэтому я привел описание как все работает выше.
+Стоит, однако, понимать, что библиотека equery не контролирует ошибки генерации sql, зато дает больший контроль во взаимодействии с Postgresql т.к. вы можете самостоятельно реализовать почти любую синтаксическую конструкцию. Необходимо понимать что и как работает и где копать в случае проблем. Именно поэтому я привел достаточно подробное описание выше.
 Хорошо это или нет &ndash; решать вам.</p>
 
 <h1>Дальнейшие планы</h1>

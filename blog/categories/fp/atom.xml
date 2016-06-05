@@ -4,7 +4,7 @@
   <title><![CDATA[Категория: Fp | Egobrain]]></title>
   <link href="http://www.egobrain.ru/blog/categories/fp/atom.xml" rel="self"/>
   <link href="http://www.egobrain.ru/"/>
-  <updated>2016-06-03T22:27:32+03:00</updated>
+  <updated>2016-06-05T16:59:28+03:00</updated>
   <id>http://www.egobrain.ru/</id>
   <author>
     <name><![CDATA[Kozlov Yakov]]></name>
@@ -42,6 +42,9 @@
 
 <p>Сегодня я расскажу про <a href="https://github.com/egobrain/repo">repo</a> и <a href="https://github.com/egobrain/equery">equery</a>.</p>
 
+<!-- more -->
+
+
 <h1>Equery</h1>
 
 <p>Какие проблемы с ручным написанием sql?<br/>
@@ -54,19 +57,37 @@
 <p>Итак, понадобится сущность, которая будет описывать структуру таблицы SQL (Благо в Erlang r17 появились мапы и с ними жизнь стала намного легче).
 Решение в лоб</p>
 
-<p>```erlang
-Schema = #{</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">Schema</span> <span class="o">=</span> <span class="err">#</span><span class="p">{</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">fields</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span>
+</span><span class='line'>   <span class="n">field_1</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Fields1Opts</span><span class="p">,</span>
+</span><span class='line'>   <span class="n">field_2</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Fields2Opts</span><span class="p">,</span>
+</span><span class='line'><span class="p">},</span>
+</span><span class='line'><span class="n">table</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="s">&quot;SomeTableName&quot;</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">}</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
-<pre><code>fields =&gt; #{
-   field_1 =&gt; Fields1Opts,
-   field_2 =&gt; Fields2Opts,
-},
-table =&gt; &lt;&lt;"SomeTableName"&gt;&gt;
-</code></pre>
-
-<p>}
-```
-FieldOpts &ndash; Набор дополнительной информации о колонках. Например:<br/>
+<p>FieldOpts &ndash; Набор дополнительной информации о колонках. Например:<br/>
 &ndash; type &ndash; тип в бд ({varchar, 255}, decimal, int, text, bigint, &hellip;)<br/>
 &ndash; required &ndash; аналог NOT NULL (boolean)<br/>
 &ndash; readOnly &ndash; удобная опция, в случае если поле нельзя обновлять, например id, который генерируется через serial или timestamp через now()<br/>
@@ -75,12 +96,23 @@ FieldOpts &ndash; Набор дополнительной информации �
 
 <p>К этому моменту у меня примерно прояснилась картина, как я хочу видеть код.</p>
 
-<p><code>erlang
-Query1 = from(Schema),
-Query2 = filter(Query1),
-...
-Result = select(QueryN)
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">Query1</span> <span class="o">=</span> <span class="n">from</span><span class="p">(</span><span class="nv">Schema</span><span class="p">),</span>
+</span><span class='line'><span class="nv">Query2</span> <span class="o">=</span> <span class="n">filter</span><span class="p">(</span><span class="nv">Query1</span><span class="p">),</span>
+</span><span class='line'><span class="err">&amp;</span><span class="n">hellip</span><span class="p">;</span>
+</span><span class='line'><span class="nv">Result</span> <span class="o">=</span> <span class="n">select</span><span class="p">(</span><span class="nv">QueryN</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Скорее всего делать внутреннее представление SQL придется через какой-то промежуточный AST, но, у меня есть одно важное требование &ndash; легкое добавление SQL конструкций, которых еще нет в моей библиотеке.
 Делать полноценный AST который потом бы компилировался в SQL или во что-то еще я не хочу. У меня есть postgresql и это все что мне нужно на данный момент.
@@ -89,9 +121,17 @@ Result = select(QueryN)
 
 <p>Возьмем пример:</p>
 
-<p><code>
-select sum(o.sum), u.name from users as u join orders o on o.user_id = u.id where u.age &gt; 18 group by u.name
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='psql'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">select</span> <span class="n">sum</span><span class="p">(</span><span class="n">o</span><span class="mf">.</span><span class="n">sum</span><span class="p">),</span> <span class="n">u</span><span class="mf">.</span><span class="k">name</span> <span class="k">from</span> <span class="n">users</span> <span class="k">as</span> <span class="n">u</span> <span class="k">join</span> <span class="n">orders</span> <span class="n">o</span> <span class="k">on</span> <span class="n">o</span><span class="mf">.</span><span class="n">user_id</span> <span class="o">=</span> <span class="n">u</span><span class="mf">.</span><span class="n">id</span> <span class="k">where</span> <span class="n">u</span><span class="mf">.</span><span class="n">age</span> <span class="o">&gt;</span> <span class="mf">18</span> <span class="k">group</span> <span class="k">by</span> <span class="n">u</span><span class="mf">.</span><span class="k">name</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Что понадобится?<br/>
 Ключевые слова, операции, пробелы, запятые и прочее что должно быть встроено &ldquo;как есть&rdquo; назовем raw (в equery &ndash; <code>{'$raw', iolist()}</code> ).<br/>
@@ -106,198 +146,401 @@ select sum(o.sum), u.name from users as u join orders o on o.user_id = u.id wher
 
 <p>В результате sql из примера превращается в AST:</p>
 
-<p>```erlang
-{exp, [</p>
-
-<pre><code>{raw, "select "},
-{exp, [
-    {raw, "sum("},
-        {exp, [{table, Ref2},{raw, "."},{raw, "sum"}]},
-    {raw, ")"}
-]}
-{raw, ","},
-{exp, [{table, Ref1},{raw, "."},{raw, "name"}]},
-{raw, " from users as "}, {table, Ref1},
-{raw, " join orders as"}, {table, Ref2}, 
-{raw, " on "},
-{exp, [
-    {exp, [{table, Ref2},{raw, "."},{raw, "user_id"}]},
-    {raw, " = "},
-    {exp, [{table, Ref1},{raw, "."},{raw, "id"}]},
-]},
-{raw, " where "},
-{exp, [
-    {exp, [{table, Ref1},{raw, "."},{raw, "age"}]},
-    {raw, " = "},
-    18
-]},
-{raw, " group by"},
-{exp, [{table, Ref1},{raw, "."},{raw, "name"}]}
-</code></pre>
-
-<p>]}
-```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;select &quot;</span><span class="p">},</span>
+</span><span class='line'><span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[</span>
+</span><span class='line'>    <span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;sum(&quot;</span><span class="p">},</span>
+</span><span class='line'>        <span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[{</span><span class="n">table</span><span class="p">,</span> <span class="nv">Ref2</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;sum&quot;</span><span class="p">}]},</span>
+</span><span class='line'>    <span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;)&quot;</span><span class="p">}</span>
+</span><span class='line'><span class="p">]}</span>
+</span><span class='line'><span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;,&quot;</span><span class="p">},</span>
+</span><span class='line'><span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[{</span><span class="n">table</span><span class="p">,</span> <span class="nv">Ref1</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;name&quot;</span><span class="p">}]},</span>
+</span><span class='line'><span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot; from users as &quot;</span><span class="p">},</span> <span class="p">{</span><span class="n">table</span><span class="p">,</span> <span class="nv">Ref1</span><span class="p">},</span>
+</span><span class='line'><span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot; join orders as&quot;</span><span class="p">},</span> <span class="p">{</span><span class="n">table</span><span class="p">,</span> <span class="nv">Ref2</span><span class="p">},</span>
+</span><span class='line'><span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot; on &quot;</span><span class="p">},</span>
+</span><span class='line'><span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[</span>
+</span><span class='line'>    <span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[{</span><span class="n">table</span><span class="p">,</span> <span class="nv">Ref2</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;user_id&quot;</span><span class="p">}]},</span>
+</span><span class='line'>    <span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot; = &quot;</span><span class="p">},</span>
+</span><span class='line'>    <span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[{</span><span class="n">table</span><span class="p">,</span> <span class="nv">Ref1</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;id&quot;</span><span class="p">}]},</span>
+</span><span class='line'><span class="p">]},</span>
+</span><span class='line'><span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot; where &quot;</span><span class="p">},</span>
+</span><span class='line'><span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[</span>
+</span><span class='line'>    <span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[{</span><span class="n">table</span><span class="p">,</span> <span class="nv">Ref1</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;age&quot;</span><span class="p">}]},</span>
+</span><span class='line'>    <span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot; = &quot;</span><span class="p">},</span>
+</span><span class='line'>    <span class="mi">18</span>
+</span><span class='line'><span class="p">]},</span>
+</span><span class='line'><span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot; group by&quot;</span><span class="p">},</span>
+</span><span class='line'><span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[{</span><span class="n">table</span><span class="p">,</span> <span class="nv">Ref1</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;name&quot;</span><span class="p">}]}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">]}</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Как преобразовать такое представление в SQL + Args, думаю вполне очевидно.
 А вот как строить его с помощью erlang?</p>
 
 <p>Для начала нам понадобятся схемы для таблиц:</p>
 
-<p>```
-UserSchema = #{</p>
-
-<pre><code>fields =&gt; #{
-    id =&gt; #{type =&gt; int, index =&gt; true, required =&gt; true, readOnly =&gt; true},
-    name =&gt; #{type =&gt; {varchar, 255}, required =&gt; true},
-    age =&gt; #{type =&gt; int}
-},
-table =&gt; &lt;&lt;"users"&gt;&gt;
-</code></pre>
-
-<p>}.</p>
-
-<p>OrderSchema = #{</p>
-
-<pre><code>fields =&gt; #{
-    id =&gt; #{type =&gt; int, index =&gt; true, required =&gt; true, readOnly =&gt; true},
-    user_id =&gt; #{type =&gt; int, required =&gt; true},
-    sum =&gt; #{type =&gt; number, required =&gt; true}
-},
-table =&gt; &lt;&lt;"orders"&gt;&gt;
-</code></pre>
-
-<p>}
-```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">UserSchema</span> <span class="o">=</span> <span class="err">#</span><span class="p">{</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">fields</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span>
+</span><span class='line'>    <span class="n">id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">int</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">,</span> <span class="n">required</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">,</span> <span class="n">readOnly</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">},</span>
+</span><span class='line'>    <span class="n">name</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">{</span><span class="n">varchar</span><span class="p">,</span> <span class="mi">255</span><span class="p">},</span> <span class="n">required</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">},</span>
+</span><span class='line'>    <span class="n">age</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">int</span><span class="p">}</span>
+</span><span class='line'><span class="p">},</span>
+</span><span class='line'><span class="n">table</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="s">&quot;users&quot;</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">}.</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">OrderSchema</span> <span class="o">=</span> <span class="err">#</span><span class="p">{</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">fields</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span>
+</span><span class='line'>    <span class="n">id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">int</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">,</span> <span class="n">required</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">,</span> <span class="n">readOnly</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">},</span>
+</span><span class='line'>    <span class="n">user_id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">int</span><span class="p">,</span> <span class="n">required</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">},</span>
+</span><span class='line'>    <span class="n">sum</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">number</span><span class="p">,</span> <span class="n">required</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">}</span>
+</span><span class='line'><span class="p">},</span>
+</span><span class='line'><span class="n">table</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="s">&quot;orders&quot;</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">}</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Начнем с того, что должна делать функция <code>from(Schema)</code></p>
 
-<p><code>erlang
-Query1 = from(UserSchema).
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">Query1</span> <span class="o">=</span> <span class="n">from</span><span class="p">(</span><span class="nv">UserSchema</span><span class="p">).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>В AST видны повторяющиеся конструкции для ссылок на поля <code>{exp, [{table, Ref1},{raw, "."},{raw, "name"}]}</code>.
 Следовательно, нужно сгенерировать Ref1 и для каждого поля из схемы построить такое AST выражение.
 Получится map, который я называю TableData:</p>
 
-<p>```erlang
-Ref1 = make_ref(),</p>
-
-<h1>{</h1>
-
-<pre><code>id   =&gt; {exp, [{table, Ref1},{raw, "."},{raw, "id"}]},
-name =&gt; {exp, [{table, Ref1},{raw, "."},{raw, "name"}]},
-age  =&gt; {exp, [{table, Ref1},{raw, "."},{raw, "age"}]},
-</code></pre>
-
-<p>}
-```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">Ref1</span> <span class="o">=</span> <span class="n">make_ref</span><span class="p">(),</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="p">{</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">id</span>   <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[{</span><span class="n">table</span><span class="p">,</span> <span class="nv">Ref1</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;id&quot;</span><span class="p">}]},</span>
+</span><span class='line'><span class="n">name</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[{</span><span class="n">table</span><span class="p">,</span> <span class="nv">Ref1</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;name&quot;</span><span class="p">}]},</span>
+</span><span class='line'><span class="n">age</span>  <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[{</span><span class="n">table</span><span class="p">,</span> <span class="nv">Ref1</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;.&quot;</span><span class="p">},{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;age&quot;</span><span class="p">}]},</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">}</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>теперь про функции. Для реализации текущего запроса нам нужны функции <code>sum</code> и <code>=</code>. Выглядят они очень просто:</p>
 
-<p>```erlang
-sum(Field) &ndash;></p>
-
-<pre><code>{exp, [{raw, "sum("}, F, {raw, ")"}]}.
-</code></pre>
-
-<p>&lsquo;=:=&rsquo;(A, B) &ndash;></p>
-
-<pre><code>{exp, [A, {raw, " = "}, B]}.
-</code></pre>
-
-<p>```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">sum</span><span class="p">(</span><span class="nv">Field</span><span class="p">)</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;sum(&quot;</span><span class="p">},</span> <span class="nv">F</span><span class="p">,</span> <span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot;)&quot;</span><span class="p">}]}.</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="err">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="o">=:=</span><span class="err">&amp;</span><span class="n">rsquo</span><span class="p">;(</span><span class="nv">A</span><span class="p">,</span> <span class="nv">B</span><span class="p">)</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="p">{</span><span class="n">exp</span><span class="p">,</span> <span class="p">[</span><span class="nv">A</span><span class="p">,</span> <span class="p">{</span><span class="n">raw</span><span class="p">,</span> <span class="s">&quot; = &quot;</span><span class="p">},</span> <span class="nv">B</span><span class="p">]}.</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Как строить where?
 Я сделал функцию <code>where(Fun, Query)</code> принимающую Fun, в которую передается несколько TableData уже участвующих в запросе, а на выходе AST для where выражения.
 Результирующий AST добавляется через and к тому, который уже хранится в Query.</p>
 
-<p><code>
-Query2 = where(fun([#{age := Age}]) -&gt; '=:='(Age, 18) end, Query1).
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">Query2</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">}])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="err">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="o">=:=</span><span class="err">&amp;</span><span class="n">rsquo</span><span class="p">;(</span><span class="nv">Age</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query1</span><span class="p">).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>С join поступим похожим образом,</p>
 
-<p><code>erlang
-Query3 = join(OrderSchema, fun([#{id := Id}, #{user_id := UserId}]) -&gt; '=:='(Id, UserId) end, Query2).
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">Query3</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="nv">OrderSchema</span><span class="p">,</span> <span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Id</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">user_id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">UserId</span><span class="p">}])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="err">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="o">=:=</span><span class="err">&amp;</span><span class="n">rsquo</span><span class="p">;(</span><span class="nv">Id</span><span class="p">,</span> <span class="nv">UserId</span><span class="p">)</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query2</span><span class="p">).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>для OrderSchema создается OrderTableData и вместе с UserTableData, которая уже есть в запросе передается в callback.</p>
 
 <p>Что касается group by то функция тоже очень похожа на предыдущие только возвращает не AST, а массив в котором описано по каким полям группировать</p>
 
-<p><code>erlang
-Query4 = group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end, Query3).
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">Query4</span> <span class="o">=</span> <span class="n">group_by</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="p">_</span><span class="nv">OrdersTableData</span><span class="p">])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="p">[</span><span class="nv">Name</span><span class="p">]</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query3</span><span class="p">).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Осталось сделать select. Функция не будет исключением и работает по сходным правила</p>
 
-<p><code>erlang
-Query5 = select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; sum(OrderSum)} end, Query4)
-</code>
-select callback возвращает описание результата &ndash; это может быть или map или одно поле (удобно для count).</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">Query5</span> <span class="o">=</span> <span class="n">select</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">sum</span> <span class="p">:</span><span class="o">=</span> <span class="nv">OrderSum</span><span class="p">}])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="o">=&gt;</span> <span class="nv">Name</span><span class="p">,</span> <span class="n">sum</span> <span class="o">=&gt;</span> <span class="n">sum</span><span class="p">(</span><span class="nv">OrderSum</span><span class="p">)}</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query4</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>select callback возвращает описание результата &ndash; это может быть или map или одно поле (удобно для count).</p>
 
 <p>Query готов. Осталось только на основе него сгенерировать итоговый Select AST и преобразовать его в SQL. Этим займемся чуть позже.
 А пока приведу код запроса полностью и попробуем сделать его чуть-чуть красивее.</p>
 
-<p><code>erlang
-Query1 = from(UserSchema),
-Query2 = where(fun([#{age := Age}]) -&gt; '=:='(Age, 18) end, Query1),
-Query3 = join(OrderSchema, fun([#{id := Id}, #{user_id := UserId}]) -&gt; '=:='(Id, UserId) end, Query2),
-Query4 = group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end, Query3),
-Query5 = select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; sum(OrderSum)} end, Query4)
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">Query1</span> <span class="o">=</span> <span class="n">from</span><span class="p">(</span><span class="nv">UserSchema</span><span class="p">),</span>
+</span><span class='line'><span class="nv">Query2</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">}])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="err">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="o">=:=</span><span class="err">&amp;</span><span class="n">rsquo</span><span class="p">;(</span><span class="nv">Age</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query1</span><span class="p">),</span>
+</span><span class='line'><span class="nv">Query3</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="nv">OrderSchema</span><span class="p">,</span> <span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Id</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">user_id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">UserId</span><span class="p">}])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="err">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="o">=:=</span><span class="err">&amp;</span><span class="n">rsquo</span><span class="p">;(</span><span class="nv">Id</span><span class="p">,</span> <span class="nv">UserId</span><span class="p">)</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query2</span><span class="p">),</span>
+</span><span class='line'><span class="nv">Query4</span> <span class="o">=</span> <span class="n">group_by</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="p">_</span><span class="nv">OrdersTableData</span><span class="p">])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="p">[</span><span class="nv">Name</span><span class="p">]</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query3</span><span class="p">),</span>
+</span><span class='line'><span class="nv">Query5</span> <span class="o">=</span> <span class="n">select</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">sum</span> <span class="p">:</span><span class="o">=</span> <span class="nv">OrderSum</span><span class="p">}])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="o">=&gt;</span> <span class="nv">Name</span><span class="p">,</span> <span class="n">sum</span> <span class="o">=&gt;</span> <span class="n">sum</span><span class="p">(</span><span class="nv">OrderSum</span><span class="p">)}</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query4</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Во-первых, давайте перенесем все функции, модифицирующие запрос в отдельный модуль. Для лаконичности q.erl
 Функции, которые генерирую postgresql AST для операций в другой модуль &ndash; pg_sql.erl</p>
 
-<p><code>erlang
-Query1 = q:from(UserSchema),
-Query2 = q:where(fun([#{age := Age}]) -&gt; pg_sql:'=:='(Age, 18) end, Query1),
-Query3 = q:join(OrderSchema, fun([#{id := Id}, #{user_id := UserId}]) -&gt; pg_sql:'=:='(Id, UserId) end, Query2),
-Query4 = q:group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end, Query3),
-Query5 = q:select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; pg_sql:sum(OrderSum)} end, Query4)
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">Query1</span> <span class="o">=</span> <span class="nn">q</span><span class="p">:</span><span class="nf">from</span><span class="p">(</span><span class="nv">UserSchema</span><span class="p">),</span>
+</span><span class='line'><span class="nv">Query2</span> <span class="o">=</span> <span class="nn">q</span><span class="p">:</span><span class="nf">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">}])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="nn">pg_sql</span><span class="p">:</span><span class="err">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="o">=:=</span><span class="err">&amp;</span><span class="n">rsquo</span><span class="p">;(</span><span class="nv">Age</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query1</span><span class="p">),</span>
+</span><span class='line'><span class="nv">Query3</span> <span class="o">=</span> <span class="nn">q</span><span class="p">:</span><span class="nf">join</span><span class="p">(</span><span class="nv">OrderSchema</span><span class="p">,</span> <span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Id</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">user_id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">UserId</span><span class="p">}])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="nn">pg_sql</span><span class="p">:</span><span class="err">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="o">=:=</span><span class="err">&amp;</span><span class="n">rsquo</span><span class="p">;(</span><span class="nv">Id</span><span class="p">,</span> <span class="nv">UserId</span><span class="p">)</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query2</span><span class="p">),</span>
+</span><span class='line'><span class="nv">Query4</span> <span class="o">=</span> <span class="nn">q</span><span class="p">:</span><span class="nf">group_by</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="p">_</span><span class="nv">OrdersTableData</span><span class="p">])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="p">[</span><span class="nv">Name</span><span class="p">]</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query3</span><span class="p">),</span>
+</span><span class='line'><span class="nv">Query5</span> <span class="o">=</span> <span class="nn">q</span><span class="p">:</span><span class="nf">select</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">sum</span> <span class="p">:</span><span class="o">=</span> <span class="nv">OrderSum</span><span class="p">}])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="o">=&gt;</span> <span class="nv">Name</span><span class="p">,</span> <span class="n">sum</span> <span class="o">=&gt;</span> <span class="nn">pg_sql</span><span class="p">:</span><span class="nf">sum</span><span class="p">(</span><span class="nv">OrderSum</span><span class="p">)}</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Query4</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Во-вторых, передавать схему как map не совсем практично. В дальнейшем нам понадобится больше функционала для моделей. Поэтому перенесем каждую схему в свой модуль.
 Я использую префикс <strong>m_</strong> и функцию <code>schema/0</code>.</p>
 
-<p>m_user.erl
-```erlang
--module(m_user).
--export([schema/0]).</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>m_user.erl </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;-</span><span class="n">module</span><span class="p">(</span><span class="n">m_user</span><span class="p">).</span>
+</span><span class='line'><span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">schema</span><span class="o">/</span><span class="mi">0</span><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">schema</span><span class="p">()</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="err">#</span><span class="p">{</span>
+</span><span class='line'>    <span class="n">fields</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span>
+</span><span class='line'>        <span class="n">id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">int</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">,</span> <span class="n">required</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">,</span> <span class="n">readOnly</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">},</span>
+</span><span class='line'>        <span class="n">name</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">{</span><span class="n">varchar</span><span class="p">,</span> <span class="mi">255</span><span class="p">},</span> <span class="n">required</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">},</span>
+</span><span class='line'>        <span class="n">age</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">int</span><span class="p">}</span>
+</span><span class='line'>    <span class="p">},</span>
+</span><span class='line'>    <span class="n">table</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="s">&quot;users&quot;</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span>
+</span><span class='line'><span class="p">}.</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
-<p>schema() &ndash;></p>
-
-<pre><code>#{
-    fields =&gt; #{
-        id =&gt; #{type =&gt; int, index =&gt; true, required =&gt; true, readOnly =&gt; true},
-        name =&gt; #{type =&gt; {varchar, 255}, required =&gt; true},
-        age =&gt; #{type =&gt; int}
-    },
-    table =&gt; &lt;&lt;"users"&gt;&gt;
-}.
-</code></pre>
-
-<p>```</p>
-
-<p>m_order.erl
-```erlang
--module(m_order).
--export([schema/0]).</p>
-
-<p>schema() &ndash;></p>
-
-<pre><code>#{
-    fields =&gt; #{
-        id =&gt; #{type =&gt; int, index =&gt; true, required =&gt; true, readOnly =&gt; true},
-        user_id =&gt; #{type =&gt; int, required =&gt; true},
-        sum =&gt; #{type =&gt; number, required =&gt; true}
-    },
-    table =&gt; &lt;&lt;"orders"&gt;&gt;
-}.
-</code></pre>
-
-<p>```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>m_order.erl </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;-</span><span class="n">module</span><span class="p">(</span><span class="n">m_order</span><span class="p">).</span>
+</span><span class='line'><span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">schema</span><span class="o">/</span><span class="mi">0</span><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">schema</span><span class="p">()</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="err">#</span><span class="p">{</span>
+</span><span class='line'>    <span class="n">fields</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span>
+</span><span class='line'>        <span class="n">id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">int</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">,</span> <span class="n">required</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">,</span> <span class="n">readOnly</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">},</span>
+</span><span class='line'>        <span class="n">user_id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">int</span><span class="p">,</span> <span class="n">required</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">},</span>
+</span><span class='line'>        <span class="n">sum</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">number</span><span class="p">,</span> <span class="n">required</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">}</span>
+</span><span class='line'>    <span class="p">},</span>
+</span><span class='line'>    <span class="n">table</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="s">&quot;orders&quot;</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span>
+</span><span class='line'><span class="p">}.</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>попутно обучим функции, которые принимали схему принимать модуль и дергать Module:schema() при этом.</p>
 
@@ -305,13 +548,23 @@ Query5 = q:select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; 
 Ну как решать эту проблему мы-то знаем ;)
 В elixir для этого существует pipe оператор <code>|&gt;</code>, в erlang его нет, но можно сделать по-другому:</p>
 
-<p>```erlang
-pipe(State, Funs) &ndash;></p>
-
-<pre><code>lists:foldl(fun(F, St) -&gt; F(St) end, State, Funs).
-</code></pre>
-
-<p>```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">pipe</span><span class="p">(</span><span class="nv">State</span><span class="p">,</span> <span class="nv">Funs</span><span class="p">)</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nn">lists</span><span class="p">:</span><span class="nf">foldl</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">F</span><span class="p">,</span> <span class="nv">St</span><span class="p">)</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">F</span><span class="p">(</span><span class="nv">St</span><span class="p">)</span> <span class="k">end</span><span class="p">,</span> <span class="nv">State</span><span class="p">,</span> <span class="nv">Funs</span><span class="p">).</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>а для каждой функции из q заведем каррированый аналог.</p>
 
@@ -319,31 +572,63 @@ pipe(State, Funs) &ndash;></p>
 
 <p>получилось:</p>
 
-<p>```erlang
-q:pipe(q:from(m_user), [</p>
-
-<pre><code>q:where(fun([#{age := Age}]) -&gt; pg_sql:'=:='(Age, 18) end),
-q:join(m_order, fun([#{id := Id}, #{user_id := UserId}]) -&gt; pg_sql:'=:='(Id, UserId) end),
-q:group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end),
-q:select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; pg_sql:sum(OrderSum)} end)
-</code></pre>
-
-<p>]).
-```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">q</span><span class="p">:</span><span class="nf">pipe</span><span class="p">(</span><span class="nn">q</span><span class="p">:</span><span class="nf">from</span><span class="p">(</span><span class="n">m_user</span><span class="p">),</span> <span class="p">[</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nn">q</span><span class="p">:</span><span class="nf">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nn">pg_sql</span><span class="p">:</span><span class="nf">&#39;=:=&#39;</span><span class="p">(</span><span class="nv">Age</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span> <span class="k">end</span><span class="p">),</span>
+</span><span class='line'><span class="nn">q</span><span class="p">:</span><span class="nf">join</span><span class="p">(</span><span class="n">m_order</span><span class="p">,</span> <span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Id</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">user_id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">UserId</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nn">pg_sql</span><span class="p">:</span><span class="nf">&#39;=:=&#39;</span><span class="p">(</span><span class="nv">Id</span><span class="p">,</span> <span class="nv">UserId</span><span class="p">)</span> <span class="k">end</span><span class="p">),</span>
+</span><span class='line'><span class="nn">q</span><span class="p">:</span><span class="nf">group_by</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="p">_</span><span class="nv">OrdersTableData</span><span class="p">])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">[</span><span class="nv">Name</span><span class="p">]</span> <span class="k">end</span><span class="p">),</span>
+</span><span class='line'><span class="nn">q</span><span class="p">:</span><span class="nf">select</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">sum</span> <span class="p">:</span><span class="o">=</span> <span class="nv">OrderSum</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Name</span><span class="p">,</span> <span class="n">sum</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nn">pg_sql</span><span class="p">:</span><span class="nf">sum</span><span class="p">(</span><span class="nv">OrderSum</span><span class="p">)}</span> <span class="k">end</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>теперь можно легко переставлять выражения (но порядок все-таки важен)</p>
 
-<p>```erlang
-q:pipe(q:from(m_user), [</p>
-
-<pre><code>q:join(m_order, fun([#{id := Id}, #{user_id := UserId}]) -&gt; pg_sql:'=:='(Id, UserId) end),
-q:select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; pg_sql:sum(OrderSum)} end),
-q:group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end),
-q:where(fun([#{age := Age}]) -&gt; pg_sql:'=:='(Age, 18) end)
-</code></pre>
-
-<p>]).
-```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">q</span><span class="p">:</span><span class="nf">pipe</span><span class="p">(</span><span class="nn">q</span><span class="p">:</span><span class="nf">from</span><span class="p">(</span><span class="n">m_user</span><span class="p">),</span> <span class="p">[</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nn">q</span><span class="p">:</span><span class="nf">join</span><span class="p">(</span><span class="n">m_order</span><span class="p">,</span> <span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Id</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">user_id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">UserId</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nn">pg_sql</span><span class="p">:</span><span class="nf">&#39;=:=&#39;</span><span class="p">(</span><span class="nv">Id</span><span class="p">,</span> <span class="nv">UserId</span><span class="p">)</span> <span class="k">end</span><span class="p">),</span>
+</span><span class='line'><span class="nn">q</span><span class="p">:</span><span class="nf">select</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">sum</span> <span class="p">:</span><span class="o">=</span> <span class="nv">OrderSum</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Name</span><span class="p">,</span> <span class="n">sum</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nn">pg_sql</span><span class="p">:</span><span class="nf">sum</span><span class="p">(</span><span class="nv">OrderSum</span><span class="p">)}</span> <span class="k">end</span><span class="p">),</span>
+</span><span class='line'><span class="nn">q</span><span class="p">:</span><span class="nf">group_by</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="p">_</span><span class="nv">OrdersTableData</span><span class="p">])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">[</span><span class="nv">Name</span><span class="p">]</span> <span class="k">end</span><span class="p">),</span>
+</span><span class='line'><span class="nn">q</span><span class="p">:</span><span class="nf">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nn">pg_sql</span><span class="p">:</span><span class="nf">&#39;=:=&#39;</span><span class="p">(</span><span class="nv">Age</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span> <span class="k">end</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Получился вполне удобный язык запросов, который удовлетворяет всем требованиям которые я описал выше.
 Все это и немного больше находится в библиотеке <a href="https://github.com/egobrain/equery">equery</a>
@@ -351,48 +636,97 @@ q:where(fun([#{age := Age}]) -&gt; pg_sql:'=:='(Age, 18) end)
 
 <p>Маленький бонус. Для тех, кому как и мне, не совсем приятно и удобно читать выражения вида</p>
 
-<p>```erlang
-pg_sql:&lsquo;andalso&rsquo;(</p>
-
-<pre><code>pg_sql:'&gt;=(Age, 18),
-pg_sql:'=&lt;'(Age, 25)
-</code></pre>
-
-<p>)
-```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">pg_sql</span><span class="p">:</span><span class="err">&amp;</span><span class="n">lsquo</span><span class="p">;</span><span class="ow">andalso</span><span class="err">&amp;</span><span class="n">rsquo</span><span class="p">;(</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nn">pg_sql</span><span class="p">:</span><span class="err">&#39;&amp;</span><span class="n">gt</span><span class="p">;</span><span class="o">=</span><span class="p">(</span><span class="nv">Age</span><span class="p">,</span> <span class="mi">18</span><span class="p">),</span>
+</span><span class='line'><span class="nn">pg_sql</span><span class="p">:</span><span class="nf">&#39;=&amp;lt;&#39;</span><span class="p">(</span><span class="nv">Age</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>я реализовал parse_transform, который в q callback-ах позволяет писать код в erlang стиле</p>
 
-<p><code>erlang
-Age &gt;= 18 andalso Age =&lt; 25
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">Age</span> <span class="o">&gt;=</span> <span class="mi">18</span> <span class="ow">andalso</span> <span class="nv">Age</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="mi">25</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p><strong>работает даже в repl !!!</strong> :)</p>
 
 <p>с ним наш запрос будет выглядеть так:</p>
 
-<p>```erlang</p>
-
-<p>-include_lib(&ldquo;equery/include/equery.hrl&rdquo;).</p>
-
-<p>Query = q:pipe(q:from(m_user), [</p>
-
-<pre><code>q:where(fun([#{age := Age}]) -&gt; Age =:= 18 end),                                                %% Изменения тут
-q:join(m_order, fun([#{id := Id}, #{user_id := UserId}]) -&gt; Id =:= UserId end),      %%  и тут
-q:group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end),
-q:select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; pg_sql:sum(OrderSum)} end)
-</code></pre>
-
-<p>]).
-```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;-</span><span class="n">include_lib</span><span class="p">(</span><span class="err">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">equery</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">equery</span><span class="p">.</span><span class="n">hrl</span><span class="err">&amp;</span><span class="n">rdquo</span><span class="p">;).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nv">Query</span> <span class="o">=</span> <span class="nn">q</span><span class="p">:</span><span class="nf">pipe</span><span class="p">(</span><span class="nn">q</span><span class="p">:</span><span class="nf">from</span><span class="p">(</span><span class="n">m_user</span><span class="p">),</span> <span class="p">[</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nn">q</span><span class="p">:</span><span class="nf">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Age</span> <span class="o">=:=</span> <span class="mi">18</span> <span class="k">end</span><span class="p">),</span>                                                <span class="c">%% Изменения тут</span>
+</span><span class='line'><span class="nn">q</span><span class="p">:</span><span class="nf">join</span><span class="p">(</span><span class="n">m_order</span><span class="p">,</span> <span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Id</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">user_id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">UserId</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Id</span> <span class="o">=:=</span> <span class="nv">UserId</span> <span class="k">end</span><span class="p">),</span>      <span class="c">%%  и тут</span>
+</span><span class='line'><span class="nn">q</span><span class="p">:</span><span class="nf">group_by</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="p">_</span><span class="nv">OrdersTableData</span><span class="p">])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">[</span><span class="nv">Name</span><span class="p">]</span> <span class="k">end</span><span class="p">),</span>
+</span><span class='line'><span class="nn">q</span><span class="p">:</span><span class="nf">select</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">sum</span> <span class="p">:</span><span class="o">=</span> <span class="nv">OrderSum</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Name</span><span class="p">,</span> <span class="n">sum</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nn">pg_sql</span><span class="p">:</span><span class="nf">sum</span><span class="p">(</span><span class="nv">OrderSum</span><span class="p">)}</span> <span class="k">end</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Чтобы получить AST для select запроса нужно вызвать qsql:select/1. А чтобы получить SQL qast:to_sql/1.</p>
 
-<p>```erlang
-qast:to_sql(qsql:select(Query)).</p>
-
-<p>{&lt;&lt;&ldquo;select \&rdquo;<strong>table-0\&ldquo;.\"name\&rdquo;,sum(\&ldquo;</strong>table-1\&rdquo;.\&ldquo;sum\&rdquo;) from \&ldquo;users\&rdquo; as \&ldquo;<strong>table-0\&rdquo; inner join \&ldquo;orders\&rdquo; as \&ldquo;</strong>table-1\&rdquo; on (\&ldquo;<strong>table-0\&rdquo;.\&ldquo;id\&rdquo; = \&ldquo;</strong>table-1\&rdquo;.\&ldquo;user_id\&rdquo;) where (\&ldquo;<strong>table-0\&rdquo;.\&ldquo;age\&rdquo; = $1) group by \&ldquo;</strong>table-0\&rdquo;.\&ldquo;name\&rdquo;&ldquo;>>,  [18]}
-```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">qast</span><span class="p">:</span><span class="nf">to_sql</span><span class="p">(</span><span class="nn">qsql</span><span class="p">:</span><span class="nf">select</span><span class="p">(</span><span class="nv">Query</span><span class="p">)).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">{</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">select</span> <span class="err">\&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="n">table</span><span class="o">-</span><span class="mi">0</span><span class="err">\&amp;</span><span class="n">ldquo</span><span class="p">;.</span><span class="err">\</span><span class="s">&quot;name</span><span class="err">\</span><span class="s">&amp;rdquo;,sum(</span><span class="err">\</span><span class="s">&amp;ldquo;&lt;/strong&gt;table-1</span><span class="err">\</span><span class="s">&amp;rdquo;.</span><span class="err">\</span><span class="s">&amp;ldquo;sum</span><span class="err">\</span><span class="s">&amp;rdquo;) from </span><span class="err">\</span><span class="s">&amp;ldquo;users</span><span class="err">\</span><span class="s">&amp;rdquo; as </span><span class="err">\</span><span class="s">&amp;ldquo;&lt;strong&gt;table-0</span><span class="err">\</span><span class="s">&amp;rdquo; inner join </span><span class="err">\</span><span class="s">&amp;ldquo;orders</span><span class="err">\</span><span class="s">&amp;rdquo; as </span><span class="err">\</span><span class="s">&amp;ldquo;&lt;/strong&gt;table-1</span><span class="err">\</span><span class="s">&amp;rdquo; on (</span><span class="err">\</span><span class="s">&amp;ldquo;&lt;strong&gt;table-0</span><span class="err">\</span><span class="s">&amp;rdquo;.</span><span class="err">\</span><span class="s">&amp;ldquo;id</span><span class="err">\</span><span class="s">&amp;rdquo; = </span><span class="err">\</span><span class="s">&amp;ldquo;&lt;/strong&gt;table-1</span><span class="err">\</span><span class="s">&amp;rdquo;.</span><span class="err">\</span><span class="s">&amp;ldquo;user_id</span><span class="err">\</span><span class="s">&amp;rdquo;) where (</span><span class="err">\</span><span class="s">&amp;ldquo;&lt;strong&gt;table-0</span><span class="err">\</span><span class="s">&amp;rdquo;.</span><span class="err">\</span><span class="s">&amp;ldquo;age</span><span class="err">\</span><span class="s">&amp;rdquo; = $1) group by </span><span class="err">\</span><span class="s">&amp;ldquo;&lt;/strong&gt;table-0</span><span class="err">\</span><span class="s">&amp;rdquo;.</span><span class="err">\</span><span class="s">&amp;ldquo;name</span><span class="err">\</span><span class="s">&amp;rdquo;&amp;ldquo;&gt;&gt;,  [18]}&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;p&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <h1>REPO</h1>
 
@@ -405,121 +739,260 @@ qast:to_sql(qsql:select(Query)).</p>
 
 <p>С select запросами все совсем просто: пишешь запрос и он исполняется.</p>
 
-<p>```
-repo:all(m_user, [</p>
-
-<pre><code>q:where(fun([#{age := Age}]) -&gt; Age =:= 18 end),   
-q:join(m_order, fun([#{id := Id}, #{user_id := UserId}]) -&gt; Id =:= UserId end),
-q:group_by(fun([#{name := Name}, _OrdersTableData]) -&gt; [Name] end),
-q:select(fun([#{name := Name}, #{sum := OrderSum}]) -&gt; #{name =&gt; Name, sum =&gt; pg_sql:sum(OrderSum)} end)
-</code></pre>
-
-<p>]).
-```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">repo</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nn">q</span><span class="p">:</span><span class="nf">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Age</span> <span class="o">=:=</span> <span class="mi">18</span> <span class="k">end</span><span class="p">),</span>
+</span><span class='line'><span class="nn">q</span><span class="p">:</span><span class="nf">join</span><span class="p">(</span><span class="n">m_order</span><span class="p">,</span> <span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Id</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">user_id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">UserId</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Id</span> <span class="o">=:=</span> <span class="nv">UserId</span> <span class="k">end</span><span class="p">),</span>
+</span><span class='line'><span class="nn">q</span><span class="p">:</span><span class="nf">group_by</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="p">_</span><span class="nv">OrdersTableData</span><span class="p">])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">[</span><span class="nv">Name</span><span class="p">]</span> <span class="k">end</span><span class="p">),</span>
+</span><span class='line'><span class="nn">q</span><span class="p">:</span><span class="nf">select</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">},</span> <span class="err">#</span><span class="p">{</span><span class="n">sum</span> <span class="p">:</span><span class="o">=</span> <span class="nv">OrderSum</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Name</span><span class="p">,</span> <span class="n">sum</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nn">pg_sql</span><span class="p">:</span><span class="nf">sum</span><span class="p">(</span><span class="nv">OrderSum</span><span class="p">)}</span> <span class="k">end</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Довольно часто нужно выбрать сущности по какому-то полю или набору полей, например по id. Изначально для этого нужно писать where запрос</p>
 
-<p>```erlang
-repo:all(m_user, [</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">repo</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nn">q</span><span class="p">:</span><span class="nf">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Id</span><span class="p">}])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Id</span> <span class="o">=:=</span> <span class="mi">123</span> <span class="k">end</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
-<pre><code>q:where(fun([#{id := Id}]) -&gt; Id =:= 123 end)
-</code></pre>
+<p>но, благодаря тому, что запросы легко строить динамически можно добавить немного сахара:</p>
 
-<p>]).
-```
-но, благодаря тому, что запросы легко строить динамически можно добавить немного сахара:</p>
-
-<p>```erlang
-like(Map) &ndash;></p>
-
-<pre><code>q:where(fun([M|_]) -&gt;
-    maps:fold(
-        fun(K, V, S) -&gt;
-            case maps:find(K, M) of
-                {ok, V2} -&gt; S andalso V =:= V2;
-                error -&gt; S
-            end
-        end, true, Map)
-end).
-</code></pre>
-
-<p>repo:all(m_user, [ like(#{id => 123} ]).
-```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">like</span><span class="p">(</span><span class="nv">Map</span><span class="p">)</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nn">q</span><span class="p">:</span><span class="nf">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="nv">M</span><span class="p">|_])</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span>
+</span><span class='line'>    <span class="nn">maps</span><span class="p">:</span><span class="nf">fold</span><span class="p">(</span>
+</span><span class='line'>        <span class="k">fun</span><span class="p">(</span><span class="nv">K</span><span class="p">,</span> <span class="nv">V</span><span class="p">,</span> <span class="nv">S</span><span class="p">)</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span>
+</span><span class='line'>            <span class="k">case</span> <span class="nn">maps</span><span class="p">:</span><span class="nf">find</span><span class="p">(</span><span class="nv">K</span><span class="p">,</span> <span class="nv">M</span><span class="p">)</span> <span class="k">of</span>
+</span><span class='line'>                <span class="p">{</span><span class="n">ok</span><span class="p">,</span> <span class="nv">V2</span><span class="p">}</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">S</span> <span class="ow">andalso</span> <span class="nv">V</span> <span class="o">=:=</span> <span class="nv">V2</span><span class="p">;</span>
+</span><span class='line'>                <span class="n">error</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">S</span>
+</span><span class='line'>            <span class="k">end</span>
+</span><span class='line'>        <span class="k">end</span><span class="p">,</span> <span class="n">true</span><span class="p">,</span> <span class="nv">Map</span><span class="p">)</span>
+</span><span class='line'><span class="k">end</span><span class="p">).</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">repo</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span> <span class="n">like</span><span class="p">(</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="o">=&gt;</span> <span class="mi">123</span><span class="p">}</span> <span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>я пошел еще дальше и repo api принимает map на вход.</p>
 
-<p><code>erlang
-repo:all(m_user, #{id =&gt; 123}). %% просто, понятно, лаконично
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">repo</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="o">=&gt;</span> <span class="mi">123</span><span class="p">}).</span> <span class="c">%% просто, понятно, лаконично&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>для поиска единственного элемента есть функция get_one</p>
 
-<p><code>erlang
-{ok, User} = repo:get_one(m_user, #{id =&gt; 123}).
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">{</span><span class="n">ok</span><span class="p">,</span> <span class="nv">User</span><span class="p">}</span> <span class="o">=</span> <span class="nn">repo</span><span class="p">:</span><span class="nf">get_one</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="o">=&gt;</span> <span class="mi">123</span><span class="p">}).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Если результат запроса слишком большой, но при этом его можно обрабатывать потоково (например вывод отчета с большим количеством полей) то желательно использовать потоковое api через <a href="https://github.com/egobrain/zlist">zlist</a>,
 что сильно уменьшает latency и потребление памяти, т.к. данные из БД подгружаются пачками по мере необходимости</p>
 
-<p>```erlang
-repo:all(m_user, [q:where(fun([#{age := Age}]) &ndash;> Age > 18 end)], fun(ZList) &ndash;></p>
-
-<pre><code>zlist:foreach(fun(#{name := Name, age := Age}) -&gt; io:format("User: ~p, ~p\n", [Name, Age]) end, Zlist)
-</code></pre>
-
-<p>end).
-```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">repo</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span><span class="nn">q</span><span class="p">:</span><span class="nf">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">}])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="nv">Age</span> <span class="o">&gt;</span> <span class="mi">18</span> <span class="k">end</span><span class="p">)],</span> <span class="k">fun</span><span class="p">(</span><span class="nv">ZList</span><span class="p">)</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nn">zlist</span><span class="p">:</span><span class="nf">foreach</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Name</span><span class="p">,</span> <span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">})</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nn">io</span><span class="p">:</span><span class="nf">format</span><span class="p">(</span><span class="s">&quot;User: </span><span class="si">~p</span><span class="s">, </span><span class="si">~p</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="p">[</span><span class="nv">Name</span><span class="p">,</span> <span class="nv">Age</span><span class="p">])</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Zlist</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">end</span><span class="p">).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Чуть не забыл. С помощью repo_utils:preload/1 можно подгружать данные из зависимых таблиц (has_many, belongs_to). Например:</p>
 
-<p>```erlang
--module(m_user).
--export([schema/0]).</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;-</span><span class="n">module</span><span class="p">(</span><span class="n">m_user</span><span class="p">).</span>
+</span><span class='line'><span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">schema</span><span class="o">/</span><span class="mi">0</span><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">schema</span><span class="p">()</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="err">#</span><span class="p">{</span>
+</span><span class='line'>    <span class="n">fields</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span>
+</span><span class='line'>        <span class="n">id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">int</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">,</span> <span class="n">required</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">,</span> <span class="n">readOnly</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">},</span>
+</span><span class='line'>        <span class="n">name</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">{</span><span class="n">varchar</span><span class="p">,</span> <span class="mi">255</span><span class="p">},</span> <span class="n">required</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">true</span><span class="p">},</span>
+</span><span class='line'>        <span class="n">age</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span><span class="n">type</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">int</span><span class="p">}</span>
+</span><span class='line'>    <span class="p">},</span>
+</span><span class='line'>    <span class="n">links</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">#</span><span class="p">{</span>
+</span><span class='line'>        <span class="n">orders</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">{</span><span class="n">has_many</span><span class="p">,</span> <span class="n">m_order</span><span class="p">,</span> <span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">user_id</span><span class="p">}}</span>
+</span><span class='line'>    <span class="p">},</span>
+</span><span class='line'>    <span class="n">table</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="s">&quot;users&quot;</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span>
+</span><span class='line'><span class="p">}.</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
-<p>schema() &ndash;></p>
+<p>запрос</p>
 
-<pre><code>#{
-    fields =&gt; #{
-        id =&gt; #{type =&gt; int, index =&gt; true, required =&gt; true, readOnly =&gt; true},
-        name =&gt; #{type =&gt; {varchar, 255}, required =&gt; true},
-        age =&gt; #{type =&gt; int}
-    },
-    links =&gt; #{
-        orders =&gt; {has_many, m_order, #{id =&gt; user_id}}
-    },
-    table =&gt; &lt;&lt;"users"&gt;&gt;
-}.
-</code></pre>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">repo</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nn">repo_utils</span><span class="p">:</span><span class="nf">preload</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
-<p>```</p>
+<p>вернет подобную структуру</p>
 
-<p>запрос
-```erlang
-repo:all(m_user, [</p>
-
-<pre><code>repo_utils:preload(orders)
-</code></pre>
-
-<p>]).
-```</p>
-
-<p>вернет подобную структуру
-```erlang
-[#{</p>
-
-<pre><code>id =&gt; UserId,
-name =&gt; UserName,
-age =&gt; UserAge,
-orders =&gt; [
-     #{id =&gt; OrderId1,  user_id =&gt; UserId, sum =&gt; Sum1},
-     #{id =&gt; OrderId2,  user_id =&gt; UserId, sum =&gt; Sum2},
-     ...
-</code></pre>
-
-<p> },
- &hellip; Other users &hellip;
-].
-```</p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="p">[</span><span class="err">#</span><span class="p">{</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">UserId</span><span class="p">,</span>
+</span><span class='line'><span class="n">name</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">UserName</span><span class="p">,</span>
+</span><span class='line'><span class="n">age</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">UserAge</span><span class="p">,</span>
+</span><span class='line'><span class="n">orders</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">[</span>
+</span><span class='line'>     <span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">OrderId1</span><span class="p">,</span>  <span class="n">user_id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">UserId</span><span class="p">,</span> <span class="n">sum</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Sum1</span><span class="p">},</span>
+</span><span class='line'>     <span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">OrderId2</span><span class="p">,</span>  <span class="n">user_id</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">UserId</span><span class="p">,</span> <span class="n">sum</span> <span class="o">=</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Sum2</span><span class="p">},</span>
+</span><span class='line'>     <span class="p">...</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span> <span class="p">},</span>
+</span><span class='line'> <span class="err">&amp;</span><span class="n">hellip</span><span class="p">;</span> <span class="nv">Other</span> <span class="n">users</span> <span class="err">&amp;</span><span class="n">hellip</span><span class="p">;</span>
+</span><span class='line'><span class="p">].</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>и все это одним SQL запросом.</p>
 
@@ -527,17 +1000,41 @@ orders =&gt; [
 
 <p>С insert/update все очень просто. API принимает один или несколько объектов и по-умолчанию возвращает их же (через sql returnging)</p>
 
-<p><code>erlang
-repo:insert(m_user, [#{name =&gt; &lt;&lt;"Alladin"&gt;&gt;, age =&gt; 25}, ...]).
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">repo</span><span class="p">:</span><span class="nf">insert</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span><span class="err">#</span><span class="p">{</span><span class="n">name</span> <span class="o">=&gt;</span> <span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="nv">Alladin</span><span class="err">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">age</span> <span class="o">=&gt;</span> <span class="mi">25</span><span class="p">},</span> <span class="err">&amp;</span><span class="n">hellip</span><span class="p">;]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
-<p><code>erlang
-repo:update(m_user, [#{id = 238, name =&gt; &lt;&lt;"Masha"&gt;&gt;, age =&gt; 18}, ...]).
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">repo</span><span class="p">:</span><span class="nf">update</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="o">=</span> <span class="mi">238</span><span class="p">,</span> <span class="n">name</span> <span class="o">=&gt;</span> <span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="nv">Masha</span><span class="err">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">age</span> <span class="o">=&gt;</span> <span class="mi">18</span><span class="p">},</span> <span class="err">&amp;</span><span class="n">hellip</span><span class="p">;]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
-<p><code>erlang
-repo:upsert(m_user, [#{id = 239, name =&gt; &lt;&lt;"Igor"&gt;&gt;, age =&gt; 18}, ...]).
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">repo</span><span class="p">:</span><span class="nf">upsert</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span><span class="err">#</span><span class="p">{</span><span class="n">id</span> <span class="o">=</span> <span class="mi">239</span><span class="p">,</span> <span class="n">name</span> <span class="o">=&gt;</span> <span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="err">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="nv">Igor</span><span class="err">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">&gt;&gt;</span><span class="p">,</span> <span class="n">age</span> <span class="o">=&gt;</span> <span class="mi">18</span><span class="p">},</span> <span class="err">&amp;</span><span class="n">hellip</span><span class="p">;]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>Хочется добавить, что для каждой модели можно, при необходимости, объявить <code>before_save/2</code> и <code>after_save/2</code> hook-и
 и, если хочется хранить сущности не в мапах, а, скажем, в record-ах, для этого есть <code>from_db/1</code> и <code>to_db/1</code> (для примера смотри <a href="https://github.com/egobrain/repo/blob/0.4.0/test/models/m_user.erl#L31">common тесты</a>)</p>
@@ -546,21 +1043,41 @@ repo:upsert(m_user, [#{id = 239, name =&gt; &lt;&lt;"Igor"&gt;&gt;, age =&gt; 18
 
 <p>Можно обновлять сущности пачкой, а не по одному:</p>
 
-<p><code>erlang
-repo:set(m_user, [
-   q:set(fun([#{age := Age}]) -&gt; #{age =&gt; Age * 2 } end)
-]).
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">repo</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span>
+</span><span class='line'>   <span class="nn">q</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">}])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="o">=&gt;</span> <span class="nv">Age</span> <span class="o">*</span> <span class="mi">2</span> <span class="p">}</span> <span class="k">end</span><span class="p">)</span>
+</span><span class='line'><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <h2>Batch delete</h2>
 
 <p>Удаляются данные только пачкой.</p>
 
-<p><code>erlang
-repo:delete(m_user, [
-   q:where(fun([#{age := Age}]) -&gt; Age &gt; 99 end)
-]).
-</code></p>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='erlang'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="nn">repo</span><span class="p">:</span><span class="nf">delete</span><span class="p">(</span><span class="n">m_user</span><span class="p">,</span> <span class="p">[</span>
+</span><span class='line'>   <span class="nn">q</span><span class="p">:</span><span class="nf">where</span><span class="p">(</span><span class="k">fun</span><span class="p">([</span><span class="err">#</span><span class="p">{</span><span class="n">age</span> <span class="p">:</span><span class="o">=</span> <span class="nv">Age</span><span class="p">}])</span> <span class="err">&amp;</span><span class="n">ndash</span><span class="p">;</span><span class="o">&gt;</span> <span class="nv">Age</span> <span class="o">&gt;</span> <span class="mi">99</span> <span class="k">end</span><span class="p">)</span>
+</span><span class='line'><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <h2>Резюме</h2>
 
@@ -568,7 +1085,7 @@ repo:delete(m_user, [
 Нет ничего плохого в том, чтобы форкуть его и заменить, докрутить его части так как это необходимо именно вам, т.к. проект очень маленький и при этом ~100% покрыт тестами.</p>
 
 <p>При этом проект позволил полностью избавиться от генерации SQL вручную (кроме миграций) и заметно сократить общий объем кодовой базы.
-Стоит однако понимать, что библиотека equery не контролирует ошибки генерации sql, зато дает больший контроль во взаимодействии с Postgresql т.к. вы можете самостоятельно реализовать почти любую синтаксическую конструкцию. Вам необходимо понимать что и как происходи и где копать в случае проблем. Именно поэтому я привел описание как все работает выше.
+Стоит, однако, понимать, что библиотека equery не контролирует ошибки генерации sql, зато дает больший контроль во взаимодействии с Postgresql т.к. вы можете самостоятельно реализовать почти любую синтаксическую конструкцию. Необходимо понимать что и как работает и где копать в случае проблем. Именно поэтому я привел достаточно подробное описание выше.
 Хорошо это или нет &ndash; решать вам.</p>
 
 <h1>Дальнейшие планы</h1>
